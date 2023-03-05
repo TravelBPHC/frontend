@@ -17,7 +17,11 @@ import { DatePicker, TimeInput } from "@mantine/dates";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import axios from "axios";
-import { useJsApiLoader, Autocomplete } from "@react-google-maps/api";
+import {
+  GeoapifyGeocoderAutocomplete,
+  GeoapifyContext,
+} from "@geoapify/react-geocoder-autocomplete";
+import "@geoapify/geocoder-autocomplete/styles/minimal.css";
 
 const useStyles = createStyles((theme) => ({
   Title: {
@@ -68,6 +72,7 @@ const useStyles = createStyles((theme) => ({
   form: {
     width: "100%",
     marginTop: 20,
+    backgroundColor: theme.colors.customDark[7],
   },
 
   chip: {
@@ -160,9 +165,16 @@ function CreatePostPage() {
       setAllUsers(data?.data?.map((item) => ({ ...item, value: item.email })));
     };
     AllUser();
-  }, [noOfMembers, searchData]);
+  }, [noOfMembers]);
 
   const Create = async () => {
+    setSource(
+      document.getElementsByClassName("geoapify-autocomplete-input")[0].value
+    );
+    setDestination(
+      document.getElementsByClassName("geoapify-autocomplete-input")[1].value
+    );
+
     if (
       source &&
       destination &&
@@ -207,35 +219,8 @@ function CreatePostPage() {
     navigate("/upcoming-trips");
   };
 
-  // async function getLocation(query) {
-  //   console.log("here:", query);
-  //   const result = await axios.get(
-  //     `https://api.radar.io/v1/search/autocomplete?query=${query}&country=IN`,
-  //     {
-  //       headers: {
-  //         Authorization: process.env.REACT_APP_MAPS_API_KEY,
-  //       },
-  //     }
-  //   );
-  //   const data = result.data.addresses.map(({ formattedAddress }) => ({
-  //     value: formattedAddress,
-  //   }));
-
-  //   setSearchData(data);
-  //   console.log(data);
-  // }
-
-  // const { isLoaded } = useJsApiLoader({
-  //   googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-  //   libraries: ["places"],
-  // });
-
-  // if (!isLoaded) {
-  //   return null;
-  // }
-
   return (
-    <>
+    <GeoapifyContext apiKey={process.env.REACT_APP_MAPS_API_KEY}>
       <Button variant="subtle" onClick={() => navigate(-1)}>
         Go Back
       </Button>
@@ -243,47 +228,17 @@ function CreatePostPage() {
         <Text className={classes.pageTitle}>
           {state?.flag ? "Update/View Post" : "Create New Post"}
         </Text>
-        <AutocompleteText
-          className={classes.form}
-          placeholder="From"
-          label="Source"
-          searchable
-          required
-          // onChange={(value) => (value.length > 0 ? getLocation(value) : null)}
-          data={[]}
-          rightSection={
-            <ActionIcon
-              style={{
-                borderLeftColor: "white",
-                borderWidth: 1,
-              }}
-              // onClick={() => console.log("hello")}
-            >
-              <IconMapPin size={20} />
-            </ActionIcon>
-          }
-        />
-        {/* <Autocomplete>
-          <TextInput
-            className={classes.form}
+        <Text fz="sm" sx={{ marginTop: 20 }}>
+          Source <span style={{ color: "red" }}>*</span>
+        </Text>
+        <div id="source">
+          <GeoapifyGeocoderAutocomplete
+            debounceDelay={1000}
             placeholder="From"
-            label="Source"
-            onChange={(event) => setSource(event.currentTarget.value)}
+            biasByCountryCode={["IN"]}
             value={source}
-            required
-            rightSection={
-              <ActionIcon
-                style={{
-                  borderLeftColor: "white",
-                  borderWidth: 1,
-                }}
-                // onClick={() => console.log("hello")}
-              >
-                <IconMapPin size={20} />
-              </ActionIcon>
-            }
           />
-        </Autocomplete> */}
+        </div>
         <Chip.Group
           className={classes.chip}
           value={source}
@@ -295,24 +250,15 @@ function CreatePostPage() {
           <Chip value="BnB">BnB</Chip>
           <Chip value="Railway Stn">Rlw Stn</Chip>
         </Chip.Group>
-        <TextInput
-          className={classes.form}
+
+        <Text fz="sm" sx={{ marginTop: 20 }}>
+          Destination <span style={{ color: "red" }}>*</span>
+        </Text>
+        <GeoapifyGeocoderAutocomplete
+          debounceDelay={1000}
           placeholder="To"
-          label="Destination"
-          onChange={(event) => setDestination(event.currentTarget.value)}
+          biasByCountryCode={["IN"]}
           value={destination}
-          required
-          rightSection={
-            <ActionIcon
-              style={{
-                borderLeftColor: "white",
-                borderWidth: 1,
-              }}
-              // onClick={() => getLocation()}
-            >
-              <IconMapPin size={20} />
-            </ActionIcon>
-          }
         />
         <Chip.Group
           className={classes.chip}
@@ -430,7 +376,7 @@ function CreatePostPage() {
           {state?.flag ? "Update" : "Next"}
         </Button>
       </div>
-    </>
+    </GeoapifyContext>
   );
 }
 

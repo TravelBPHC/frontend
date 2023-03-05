@@ -33,6 +33,38 @@ body::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
 
+.geocoder-container {
+  width: 100%;
+}
+
+.geoapify-autocomplete-input {
+  width: calc(100% - 0px) !important;
+  background-color: #25262b !important;
+  border-radius: 4px !important;
+  border: 1px solid #373a40 !important;
+}
+
+.geoapify-autocomplete-items {
+  background-color: #25262b !important;
+}
+
+.geoapify-autocomplete-item {
+  background-color: #25262b !important;
+  color: white !important;
+}
+
+.geoapify-autocomplete-item:hover {
+  background-color: #2f2f2f !important;
+}
+
+.geoapify-autocomplete-item .secondary-part {
+  color: white !important;
+}
+
+.geoapify-close-button {
+  color: white !important;
+}
+
 .my-masonry-grid {
   display: -webkit-box; /* Not needed if autoprefixing */
   display: -ms-flexbox; /* Not needed if autoprefixing */

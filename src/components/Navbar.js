@@ -17,7 +17,7 @@ const useStyles = createStyles((theme) => ({
     paddingLeft: 20,
     paddingRight: 20,
     width: window.innerWidth,
-    zIndex: 100,
+    zIndex: 2000,
     display: "flex",
     flexDirection: "row",
     // justifyContent: "flex-end",
