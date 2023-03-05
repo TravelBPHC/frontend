@@ -168,26 +168,22 @@ function CreatePostPage() {
   }, [noOfMembers]);
 
   const Create = async () => {
-    setSource(
-      document.getElementsByClassName("geoapify-autocomplete-input")[0].value
-    );
-    setDestination(
-      document.getElementsByClassName("geoapify-autocomplete-input")[1].value
-    );
-
-    if (
-      source &&
-      destination &&
-      date &&
-      leavingTime &&
-      waitingTime &&
-      source != destination
-    ) {
+    const source = document.getElementsByClassName(
+      "geoapify-autocomplete-input"
+    )[0].value;
+    const destination = document.getElementsByClassName(
+      "geoapify-autocomplete-input"
+    )[1].value;
+    if (date && leavingTime && waitingTime && source != destination) {
       setError(false);
       navigate("/choose-vendor", {
         state: {
-          source: source,
-          destination: destination,
+          source: document.getElementsByClassName(
+            "geoapify-autocomplete-input"
+          )[0].value,
+          destination: document.getElementsByClassName(
+            "geoapify-autocomplete-input"
+          )[1].value,
           departure_date: date,
           departure_time: dayjs(leavingTime).format("HH:mm:ss"),
           waiting_time: waitingTime,
@@ -239,16 +235,20 @@ function CreatePostPage() {
             value={source}
           />
         </div>
-        <Chip.Group
-          className={classes.chip}
-          value={source}
-          onChange={setSource}
-        >
-          <Chip value="Campus">Campus</Chip>
-          <Chip value="Airport">Airport</Chip>
-          <Chip value="F3">F3</Chip>
-          <Chip value="BnB">BnB</Chip>
-          <Chip value="Railway Stn">Rlw Stn</Chip>
+        <Chip.Group className={classes.chip} onChange={setSource}>
+          <Chip value="Birla Institute of Technology & Science Hyderabad, Lover's Lane, - 500087, TG, India">
+            Campus
+          </Chip>
+          <Chip value="Rajiv Gandhi International Airport, Airport Approach Road, Mamidipally - 509218, TG, India">
+            Airport
+          </Chip>
+          <Chip value="Sainikpuri, Hyderabad, TG, India">F3</Chip>
+          <Chip value="alankitha resort, Hyderabad - Karimnagar Highway, Thumukunta - 500078, TG, India">
+            BnB
+          </Chip>
+          <Chip value="Secunderabad Junction, Station Road, Ward 150 Monda Market, Secunderabad - 500003, TG, India">
+            Rlw Stn
+          </Chip>
         </Chip.Group>
 
         <Text fz="sm" sx={{ marginTop: 20 }}>
@@ -260,16 +260,20 @@ function CreatePostPage() {
           biasByCountryCode={["IN"]}
           value={destination}
         />
-        <Chip.Group
-          className={classes.chip}
-          value={destination}
-          onChange={setDestination}
-        >
-          <Chip value="Campus">Campus</Chip>
-          <Chip value="Airport">Airport</Chip>
-          <Chip value="F3">F3</Chip>
-          <Chip value="BnB">BnB</Chip>
-          <Chip value="Railway Stn">Rlw Stn</Chip>
+        <Chip.Group className={classes.chip} onChange={setDestination}>
+          <Chip value="Birla Institute of Technology & Science Hyderabad, Lover's Lane, - 500087, TG, India">
+            Campus
+          </Chip>
+          <Chip value="Rajiv Gandhi International Airport, Airport Approach Road, Mamidipally - 509218, TG, India">
+            Airport
+          </Chip>
+          <Chip value="Sainikpuri, Hyderabad, TG, India">F3</Chip>
+          <Chip value="alankitha resort, Hyderabad - Karimnagar Highway, Thumukunta - 500078, TG, India">
+            BnB
+          </Chip>
+          <Chip value="Secunderabad Junction, Station Road, Ward 150 Monda Market, Secunderabad - 500003, TG, India">
+            Rlw Stn
+          </Chip>
         </Chip.Group>
 
         <DatePicker
