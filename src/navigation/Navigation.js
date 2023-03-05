@@ -19,6 +19,7 @@ import Page404 from "../pages/Page404";
 import Footer from "../components/Footer";
 import { UserContext } from "../utils/Context";
 import axios from "axios";
+import CO2 from "../pages/CO2";
 
 function Navigation() {
   const [loggedIn, setLoggedIn] = React.useState(
@@ -147,6 +148,7 @@ function Navigation() {
                 <Route path="/create-post" element={<CreatePostPage />} />
                 <Route path="/choose-vendor" element={<ChooseVendorPage />} />
                 <Route path="/past-trips" element={<PastTripsPage />} />
+                <Route path="/co2" element={<CO2 />} />
                 <Route path="/upcoming-trips" element={<UpcomingTripsPage />} />
                 <Route
                   path="/pending-approval"

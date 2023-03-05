@@ -121,7 +121,7 @@ function Footer() {
           <Text>Approval</Text>
         </Link>
       </Center>
-      <Text className={classes.copyright}>© Travel@BPHC 2022</Text>
+      {/* <Text className={classes.copyright}>© Travel@BPHC 2022</Text> */}
     </div>
   );
 }

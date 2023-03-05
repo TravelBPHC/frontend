@@ -1,6 +1,6 @@
-import { Avatar, Button, createStyles, Menu, Text } from "@mantine/core";
+import { Avatar, Button, createStyles, Flex, Menu, Text } from "@mantine/core";
 import React from "react";
-import { IconChevronDown, IconLogout } from "@tabler/icons";
+import { IconBulb, IconChevronDown, IconLogout } from "@tabler/icons";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { googleLogout } from "@react-oauth/google";
@@ -154,6 +154,19 @@ function Navbar({ loggedIn, setLoggedIn }) {
             </Link>
             <Link to="/pending-approval">
               <Menu.Item>Pending Approvals</Menu.Item>
+            </Link>
+
+            <Link to="/co2">
+              <Menu.Item>
+                <Flex
+                  direction={"row"}
+                  align="center"
+                  justify={"space-between"}
+                >
+                  Carbon Emission
+                  <IconBulb color="yellow" />
+                </Flex>
+              </Menu.Item>
             </Link>
 
             <Menu.Divider />
