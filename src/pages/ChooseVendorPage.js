@@ -18,6 +18,7 @@ import Autos from "../utils/Auto";
 import { UserContext } from "../utils/Context";
 import Map from "../components/Map";
 import { IconLeaf } from "@tabler/icons";
+import Bus from "../utils/Bus";
 
 const useStyles = createStyles((theme) => ({
   pageTitle: {
@@ -162,6 +163,7 @@ function ChooseVendorPage() {
   const { upcomingTrips, setUpcomingTrips } = React.useContext(UserContext);
   const { classes } = useStyles();
   const [vendor, setVendor] = React.useState(null);
+  const [busModal, setBusModal] = React.useState(false);
   const [vehicle, setVehicle] = React.useState(null);
   const [vehicleId, setVehicleId] = React.useState(null);
   const [seats, setSeats] = React.useState(null);
@@ -242,6 +244,13 @@ function ChooseVendorPage() {
       <Grid columns={12} gutter={"xl"}>
         <Grid.Col span={8} className={classes.wrapper}>
           <Text className={classes.pageTitle}>Available Vendors</Text>
+          <Button
+            sx={{ marginTop: 10, backgroundColor: "green" }}
+            onClick={() => setBusModal((busModal) => !busModal)}
+          >
+            <IconLeaf /> Bus Schedule
+          </Button>
+          <Bus opened={busModal} setOpened={setBusModal} />
           <Text className={classes.pageSubtitle}>Cabs</Text>
           <div className={classes.vendorGroup}>
             <Accordion variant="contained">
@@ -288,8 +297,7 @@ function ChooseVendorPage() {
                               <Flex align="center" justify={"center"}>
                                 <IconLeaf
                                   color={
-                                    Math.trunc((dist / 1000000) * item.em_fac) >
-                                    10
+                                    Math.trunc(item.em_fac) > 140
                                       ? "red"
                                       : "green"
                                   }
@@ -311,7 +319,7 @@ function ChooseVendorPage() {
                 </Accordion.Item>
               ))}
             </Accordion>
-            <Text className={classes.pageSubtitle}>Auto</Text>
+            <Text className={classes.pageSubtitle}>Auto Rickshaw</Text>
             <Accordion variant="contained">
               {Autos.map((item, id) => (
                 <Accordion.Item value={item.name}>
@@ -340,9 +348,7 @@ function ChooseVendorPage() {
                         <Flex align="center" justify={"center"}>
                           <IconLeaf
                             color={
-                              Math.trunc((dist / 1000000) * item.em_fac) > 10
-                                ? "red"
-                                : "green"
+                              Math.trunc(item.em_fac) > 140 ? "red" : "green"
                             }
                           />
                           <Text fz={"sm"} c="dimmed">
