@@ -444,11 +444,11 @@ export default function CustomDiv({ type, item, email }) {
                   <div>
                     <div className={classes.text}>
                       <Text c="dimmed">From: </Text>
-                      <Text>{item.source}</Text>
+                      <Text>{item.source.substring(0, 50)}</Text>
                     </div>
                     <div className={classes.text}>
                       <Text c="dimmed">To: </Text>
-                      <Text>{item.destination}</Text>
+                      <Text>{item.destination.substring(0, 50)}</Text>
                     </div>
                     <div className={classes.text}>
                       <Text c="dimmed">Date: </Text>
@@ -539,11 +539,11 @@ export default function CustomDiv({ type, item, email }) {
                   <div>
                     <div className={classes.text}>
                       <Text c="dimmed">From: </Text>
-                      <Text>{item.source}</Text>
+                      <Text>{item.source.substring(0, 50)}</Text>
                     </div>
                     <div className={classes.text}>
                       <Text c="dimmed">To: </Text>
-                      <Text>{item.destination}</Text>
+                      <Text>{item.destination.substring(0, 50)}</Text>
                     </div>
                     <div className={classes.text}>
                       <Text c="dimmed">Date: </Text>
@@ -846,11 +846,11 @@ export default function CustomDiv({ type, item, email }) {
                   <div>
                     <div className={classes.text}>
                       <Text c="dimmed">From: </Text>
-                      <Text>{item.source}</Text>
+                      <Text>{item.source.substring(0, 50)}</Text>
                     </div>
                     <div className={classes.text}>
                       <Text c="dimmed">To: </Text>
-                      <Text>{item.destination}</Text>
+                      <Text>{item.destination.substring(0, 50)}</Text>
                     </div>
                     <div className={classes.text}>
                       <Text c="dimmed">Date: </Text>
@@ -897,11 +897,11 @@ export default function CustomDiv({ type, item, email }) {
                   <div>
                     <div className={classes.text}>
                       <Text c="dimmed">From: </Text>
-                      <Text>{item.source}</Text>
+                      <Text>{item.source.substring(0, 50)}</Text>
                     </div>
                     <div className={classes.text}>
                       <Text c="dimmed">To: </Text>
-                      <Text>{item.destination}</Text>
+                      <Text>{item.destination.substring(0, 50)}</Text>
                     </div>
                     <div className={classes.text}>
                       <Text c="dimmed">Date: </Text>
