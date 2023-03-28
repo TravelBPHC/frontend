@@ -168,22 +168,12 @@ function CreatePostPage() {
   }, [noOfMembers]);
 
   const Create = async () => {
-    const source = document.getElementsByClassName(
-      "geoapify-autocomplete-input"
-    )[0].value;
-    const destination = document.getElementsByClassName(
-      "geoapify-autocomplete-input"
-    )[1].value;
     if (date && leavingTime && waitingTime && source != destination) {
       setError(false);
       navigate("/choose-vendor", {
         state: {
-          source: document.getElementsByClassName(
-            "geoapify-autocomplete-input"
-          )[0].value,
-          destination: document.getElementsByClassName(
-            "geoapify-autocomplete-input"
-          )[1].value,
+          source: source,
+          destination: destination,
           departure_date: date,
           departure_time: dayjs(leavingTime).format("HH:mm:ss"),
           waiting_time: waitingTime,
@@ -224,56 +214,64 @@ function CreatePostPage() {
         <Text className={classes.pageTitle}>
           {state?.flag ? "Update/View Post" : "Create New Post"}
         </Text>
-        <Text fz="sm" sx={{ marginTop: 20 }}>
+        {/* <Text fz="sm" sx={{ marginTop: 20 }}>
           Source <span style={{ color: "red" }}>*</span>
-        </Text>
-        <div id="source">
-          <GeoapifyGeocoderAutocomplete
-            debounceDelay={1000}
-            placeholder="From"
-            biasByCountryCode={["IN"]}
-            value={source}
-          />
-        </div>
+        </Text> */}
+        <TextInput
+          className={classes.form}
+          placeholder="From"
+          label="Source"
+          onChange={(event) => setSource(event.currentTarget.value)}
+          value={source}
+          required
+          rightSection={
+            <ActionIcon
+              style={{
+                borderLeftColor: "white",
+                borderWidth: 1,
+              }}
+              // onClick={() => console.log("hello")}
+            >
+              <IconMapPin size={20} />
+            </ActionIcon>
+          }
+        />
         <Chip.Group className={classes.chip} onChange={setSource}>
-          <Chip value="Birla Institute of Technology & Science Hyderabad, Lover's Lane, - 500087, TG, India">
-            Campus
-          </Chip>
-          <Chip value="Rajiv Gandhi International Airport, Airport Approach Road, Mamidipally - 509218, TG, India">
-            Airport
-          </Chip>
-          <Chip value="Sainikpuri, Hyderabad, TG, India">F3</Chip>
-          <Chip value="alankitha resort, Hyderabad - Karimnagar Highway, Thumukunta - 500078, TG, India">
-            BnB
-          </Chip>
-          <Chip value="Secunderabad Junction, Station Road, Ward 150 Monda Market, Secunderabad - 500003, TG, India">
-            Rlw Stn
-          </Chip>
+          <Chip value="Campus">Campus</Chip>
+          <Chip value="Airport">Airport</Chip>
+          <Chip value="F3">F3</Chip>
+          <Chip value="BnB">BnB</Chip>
+          <Chip value="Railway Station">Rlw Stn</Chip>
         </Chip.Group>
 
-        <Text fz="sm" sx={{ marginTop: 20 }}>
+        {/* <Text fz="sm" sx={{ marginTop: 20 }}>
           Destination <span style={{ color: "red" }}>*</span>
-        </Text>
-        <GeoapifyGeocoderAutocomplete
-          debounceDelay={1000}
+        </Text> */}
+        <TextInput
+          className={classes.form}
           placeholder="To"
-          biasByCountryCode={["IN"]}
+          label="Destination"
+          onChange={(event) => setDestination(event.currentTarget.value)}
           value={destination}
+          required
+          rightSection={
+            <ActionIcon
+              style={{
+                borderLeftColor: "white",
+                borderWidth: 1,
+              }}
+              // onClick={() => getLocation()}
+            >
+              <IconMapPin size={20} />
+            </ActionIcon>
+          }
         />
         <Chip.Group className={classes.chip} onChange={setDestination}>
-          <Chip value="Birla Institute of Technology & Science Hyderabad, Lover's Lane, - 500087, TG, India">
-            Campus
-          </Chip>
-          <Chip value="Rajiv Gandhi International Airport, Airport Approach Road, Mamidipally - 509218, TG, India">
-            Airport
-          </Chip>
-          <Chip value="Sainikpuri, Hyderabad, TG, India">F3</Chip>
-          <Chip value="alankitha resort, Hyderabad - Karimnagar Highway, Thumukunta - 500078, TG, India">
-            BnB
-          </Chip>
-          <Chip value="Secunderabad Junction, Station Road, Ward 150 Monda Market, Secunderabad - 500003, TG, India">
-            Rlw Stn
-          </Chip>
+          <Chip value="Campus">Campus</Chip>
+          <Chip value="Airport">Airport</Chip>
+          <Chip value="F3">F3</Chip>
+          <Chip value="BnB">BnB</Chip>
+          <Chip value="Railway Station">Rlw Stn</Chip>
         </Chip.Group>
 
         <DatePicker

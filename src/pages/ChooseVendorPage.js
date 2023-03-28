@@ -19,6 +19,7 @@ import { UserContext } from "../utils/Context";
 import Map from "../components/Map";
 import { IconLeaf } from "@tabler/icons";
 import Bus from "../utils/Bus";
+import { Carousel } from "@mantine/carousel";
 
 const useStyles = createStyles((theme) => ({
   pageTitle: {
@@ -79,6 +80,24 @@ const useStyles = createStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-evenly",
+  },
+
+  vendor: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 20,
+    [`@media (max-width: ${theme.breakpoints.lg}px)`]: {
+      display: "none",
+    },
+  },
+
+  carousel: {
+    display: "none",
+
+    [`@media (max-width: ${theme.breakpoints.lg}px)`]: {
+      display: "block",
+    },
   },
 
   box: {
@@ -169,9 +188,6 @@ function ChooseVendorPage() {
   const [seats, setSeats] = React.useState(null);
   const [phone, setPhone] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
-  const [destCoord, setDestCoord] = React.useState([]);
-  const [sourceCoord, setSourceCoord] = React.useState([]);
-  const [dist, setDist] = React.useState(null);
   let navigate = useNavigate();
   const { state } = useLocation();
 
@@ -200,30 +216,6 @@ function ChooseVendorPage() {
     setLoading(false);
   };
 
-  React.useEffect(() => {
-    async function fetchCoord() {
-      if (state.source && state.destination) {
-        let encoded_source = encodeURIComponent(state.source);
-        const result_source = await axios.get(
-          `https://api.geoapify.com/v1/geocode/search?text=${encoded_source}&format=json&apiKey=${process.env.REACT_APP_MAPS_API_KEY}`
-        );
-        setSourceCoord([
-          result_source.data.results[0].lat,
-          result_source.data.results[0].lon,
-        ]);
-        let encoded_dest = encodeURIComponent(state.destination);
-        const result_dest = await axios.get(
-          `https://api.geoapify.com/v1/geocode/search?text=${encoded_dest}&format=json&apiKey=${process.env.REACT_APP_MAPS_API_KEY}`
-        );
-        setDestCoord([
-          result_dest.data.results[0].lat,
-          result_dest.data.results[0].lon,
-        ]);
-      }
-    }
-    fetchCoord();
-  }, []);
-
   const getUpcomingTrips = React.useCallback(
     async (response) => {
       const data = await axios.get(
@@ -242,7 +234,7 @@ function ChooseVendorPage() {
   return (
     <>
       <Grid columns={12} gutter={"xl"}>
-        <Grid.Col span={8} className={classes.wrapper}>
+        <Grid.Col lg={8} className={classes.wrapper}>
           <Text className={classes.pageTitle}>Available Vendors</Text>
           <Button
             sx={{ marginTop: 10, backgroundColor: "green" }}
@@ -260,61 +252,69 @@ function ChooseVendorPage() {
                     {item.name} - {item.phone}
                   </Accordion.Control>
                   <Accordion.Panel>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        gap: 20,
-                      }}
-                    >
+                    <div className={classes.vendor}>
                       {item.cars.map((item, id) =>
                         state.noOfMembers <= item.capacity ? (
-                          <Flex direction={"column"} align="center">
-                            <Card
-                              className={classes.box}
-                              withBorder
-                              onClick={() => {
-                                setVehicle(item.name);
-                                setVehicleId(item.id);
-                                setSeats(item.capacity);
-                              }}
-                              style={{
-                                borderColor:
-                                  vehicleId === item.id ? "white" : null,
-                                transitionDuration: "0.3s",
-                              }}
-                            >
-                              <Text>{item.name}</Text>
-                              <Text>Capacity: {item.capacity}</Text>
-                            </Card>
-                            <Flex
-                              direction={"row"}
-                              align="center"
-                              justify={"center"}
-                              gap={20}
-                            >
-                              <Flex align="center" justify={"center"}>
-                                <IconLeaf
-                                  color={
-                                    Math.trunc(item.em_fac) > 140
-                                      ? "red"
-                                      : "green"
-                                  }
-                                />
-                                <Text fz={"sm"} c="dimmed">
-                                  CO2
-                                </Text>
-                              </Flex>
-                              <Text fz={"xs"}>
-                                {Math.trunc((dist / 1000000) * item.em_fac)} kg
-                                CO2/L
-                              </Text>
+                          <>
+                            <Flex direction={"column"} align="center">
+                              <Card
+                                className={classes.box}
+                                withBorder
+                                onClick={() => {
+                                  setVehicle(item.name);
+                                  setVehicleId(item.id);
+                                  setSeats(item.capacity);
+                                }}
+                                style={{
+                                  borderColor:
+                                    vehicleId === item.id ? "white" : null,
+                                  transitionDuration: "0.3s",
+                                }}
+                              >
+                                <Text>{item.name}</Text>
+                                <Text>Capacity: {item.capacity}</Text>
+                              </Card>
                             </Flex>
-                          </Flex>
+                          </>
                         ) : null
                       )}
                     </div>
+                    <Carousel
+                      withControls={false}
+                      slideSize="33.333333%"
+                      breakpoints={[
+                        { maxWidth: "lg", slideSize: "33%" },
+                        { maxWidth: "sm", slideSize: "40%" },
+                        { maxWidth: "xs", slideSize: "70%", slideGap: 0 },
+                      ]}
+                      className={classes.carousel}
+                    >
+                      {item.cars.map((item, id) =>
+                        state.noOfMembers <= item.capacity ? (
+                          <>
+                            <Carousel.Slide>
+                              <Card
+                                className={classes.box}
+                                withBorder
+                                onClick={() => {
+                                  setVehicle(item.name);
+                                  setVehicleId(item.id);
+                                  setSeats(item.capacity);
+                                }}
+                                style={{
+                                  borderColor:
+                                    vehicleId === item.id ? "white" : null,
+                                  transitionDuration: "0.3s",
+                                }}
+                              >
+                                <Text>{item.name}</Text>
+                                <Text>Capacity: {item.capacity}</Text>
+                              </Card>
+                            </Carousel.Slide>
+                          </>
+                        ) : null
+                      )}
+                    </Carousel>
                   </Accordion.Panel>
                 </Accordion.Item>
               ))}
@@ -339,26 +339,6 @@ function ChooseVendorPage() {
                       }}
                     >
                       <Text>Capacity: {item.capacity}</Text>
-                      <Flex
-                        direction={"row"}
-                        align="center"
-                        justify={"center"}
-                        gap={20}
-                      >
-                        <Flex align="center" justify={"center"}>
-                          <IconLeaf
-                            color={
-                              Math.trunc(item.em_fac) > 140 ? "red" : "green"
-                            }
-                          />
-                          <Text fz={"sm"} c="dimmed">
-                            CO2
-                          </Text>
-                        </Flex>
-                        <Text fz={"xs"}>
-                          {Math.trunc((dist / 1000000) * item.em_fac)} kg CO2/L
-                        </Text>
-                      </Flex>
                       <Button variant="outline">Select</Button>
                     </div>
                   </Accordion.Panel>
@@ -385,8 +365,8 @@ function ChooseVendorPage() {
             </Button>
           </Flex>
         </Grid.Col>
-        <Divider orientation="vertical" />
-        <Grid.Col span={"auto"}>
+        {/* <Divider orientation="vertical" /> */}
+        {/* <Grid.Col span={"auto"}>
           {sourceCoord.length != 0 && destCoord.length != 0 ? (
             <>
               <Map
@@ -399,7 +379,7 @@ function ChooseVendorPage() {
               />
             </>
           ) : null}
-        </Grid.Col>
+        </Grid.Col> */}
       </Grid>
       <Modal
         opened={opened}
@@ -411,11 +391,17 @@ function ChooseVendorPage() {
           justifyContent: "center",
           alignItems: "center",
         }}
+        withCloseButton={false}
       >
         <Text>
           Please contact the vendor to confirm car details and trip status.
         </Text>
-        <Button onClick={() => navigate("/upcoming-trips")}>Got it!</Button>
+        <Button
+          sx={{ marginTop: 20, float: "right" }}
+          onClick={() => navigate("/upcoming-trips")}
+        >
+          Got it!
+        </Button>
       </Modal>
     </>
   );

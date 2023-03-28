@@ -107,30 +107,6 @@ function Navbar({ loggedIn, setLoggedIn }) {
       className={classes.wrapper}
       style={{ display: loggedIn ? null : "none" }}
     >
-      <Button
-        sx={{
-          backgroundColor: "transparent",
-          borderColor: "rgba(255,255,255,0.4)",
-          borderWidth: "0.1px",
-          borderStyle: "solid",
-          borderRadius: 20,
-          transitionDuration: "0.6s",
-          "&:hover": {
-            backgroundColor: "green",
-          },
-        }}
-        onClick={() => navigate("/co2")}
-      >
-        <Flex
-          direction={"row"}
-          align="center"
-          justify={"space-between"}
-          gap={10}
-        >
-          <IconBulb color="yellow" />
-          Carbon Emission
-        </Flex>
-      </Button>
       <Logo
         className={classes.logo}
         onClick={() => navigate("/")}
