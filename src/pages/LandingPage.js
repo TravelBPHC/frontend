@@ -12,7 +12,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import CustomDiv from "../components/CustomDiv";
 import BG from "../assets/bg.jpg";
-import { GoogleLogin } from "@react-oauth/google";
+import {
+  GoogleLogin,
+  hasGrantedAllScopesGoogle,
+  useGoogleLogin,
+} from "@react-oauth/google";
 
 const useStyles = createStyles((theme) => ({
   Textbox: {
@@ -94,6 +98,13 @@ const useStyles = createStyles((theme) => ({
 function LandingPage({ loggedIn, setLoggedIn }) {
   const { classes } = useStyles();
 
+  const googlelogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: (TokenResponse) => console.log(TokenResponse),
+    scope: ["https://www.googleapis.com/auth/calendar"],
+    // redirect_uri: `${process.env.REACT_APP_ROOT_URL}/user/auth`,
+  });
+
   const Login = async (response) => {
     console.log("response", response);
     var xhr = new XMLHttpRequest();
@@ -108,6 +119,12 @@ function LandingPage({ loggedIn, setLoggedIn }) {
     };
   };
 
+  const hasAccess = (tokenResponse) =>
+    hasGrantedAllScopesGoogle(
+      tokenResponse,
+      "https://www.googleapis.com/auth/calendar"
+    );
+
   React.useEffect(() => {}, [loggedIn]);
 
   return (
@@ -121,20 +138,25 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           Travelling together was never simpler!
         </Title>
         <Button.Group className={classes.ButtonGroup}>
-          <GoogleLogin
+          {/* <GoogleLogin
             // clientId={process.env.REACT_APP_GOOGLE_CLIENT_KEY}
-            theme="dark"
+            // theme="dark"
             // render={(renderProps) => (
             //   <Button variant="outline" onClick={renderProps.onClick}>
             //     Login with BITS Mail
             //   </Button>
             // )}
-            buttonText="Login"
+            // buttonText="Login"
             onSuccess={(credentialResponse) => {
               Login(credentialResponse);
             }}
+            // onSuccess={(credentialResponse) => {
+            //   console.log(hasAccess(credentialResponse));
+            // }}
             onFailure={Login}
-          />
+            // onClick={() => googlelogin()}
+          /> */}
+          <Button onClick={() => googlelogin()}>Login</Button>
         </Button.Group>
       </div>
     </>

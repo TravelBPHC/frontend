@@ -130,6 +130,15 @@ function Navigation() {
     [userDetail, upcomingTrips, pastTrips, sentRequests, recievedRequests]
   );
 
+  // const config = {
+  //   clientId: "<CLIENT_ID>",
+  //   apiKey: "<API_KEY>",
+  //   scope: "https://www.googleapis.com/auth/calendar",
+  //   discoveryDocs: [
+  //     "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+  //   ],
+  // };
+
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_KEY}>
       <BrowserRouter>
