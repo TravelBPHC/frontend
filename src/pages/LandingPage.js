@@ -9,14 +9,8 @@ import {
   Center,
 } from "@mantine/core";
 import React from "react";
-import { Link } from "react-router-dom";
-import CustomDiv from "../components/CustomDiv";
 import BG from "../assets/bg.jpg";
-import {
-  GoogleLogin,
-  hasGrantedAllScopesGoogle,
-  useGoogleLogin,
-} from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const useStyles = createStyles((theme) => ({
   Textbox: {
@@ -100,30 +94,28 @@ function LandingPage({ loggedIn, setLoggedIn }) {
 
   const googlelogin = useGoogleLogin({
     flow: "auth-code",
-    onSuccess: (TokenResponse) => console.log(TokenResponse),
+    onSuccess: (TokenResponse) => {
+      // console.log(TokenResponse);
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", `${process.env.REACT_APP_ROOT_URL}/user/auth`);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.send("code=" + TokenResponse.code);
+      xhr.onload = function () {
+        let data = JSON.parse(xhr.responseText);
+        console.log("Signed in as: ", data);
+        localStorage.setItem("SavedToken", "Bearer " + data.token);
+        localStorage.setItem("accessToken", "Bearer " + data.g_access_token);
+        localStorage.setItem("refreshToken", data.g_refresh_token);
+        localStorage.setItem(
+          "expires_at",
+          Date.now() + (data.expires_in - 30) * 1000
+        );
+
+        setLoggedIn(true);
+      };
+    },
     scope: ["https://www.googleapis.com/auth/calendar"],
-    // redirect_uri: `${process.env.REACT_APP_ROOT_URL}/user/auth`,
   });
-
-  const Login = async (response) => {
-    console.log("response", response);
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", `${process.env.REACT_APP_ROOT_URL}/user/auth`);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.send("credential=" + response.credential);
-    xhr.onload = function () {
-      let data = JSON.parse(xhr.responseText);
-      console.log("Signed in as: ", data);
-      localStorage.setItem("SavedToken", "Bearer " + data.token);
-      setLoggedIn(true);
-    };
-  };
-
-  const hasAccess = (tokenResponse) =>
-    hasGrantedAllScopesGoogle(
-      tokenResponse,
-      "https://www.googleapis.com/auth/calendar"
-    );
 
   React.useEffect(() => {}, [loggedIn]);
 
@@ -138,24 +130,6 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           Travelling together was never simpler!
         </Title>
         <Button.Group className={classes.ButtonGroup}>
-          {/* <GoogleLogin
-            // clientId={process.env.REACT_APP_GOOGLE_CLIENT_KEY}
-            // theme="dark"
-            // render={(renderProps) => (
-            //   <Button variant="outline" onClick={renderProps.onClick}>
-            //     Login with BITS Mail
-            //   </Button>
-            // )}
-            // buttonText="Login"
-            onSuccess={(credentialResponse) => {
-              Login(credentialResponse);
-            }}
-            // onSuccess={(credentialResponse) => {
-            //   console.log(hasAccess(credentialResponse));
-            // }}
-            onFailure={Login}
-            // onClick={() => googlelogin()}
-          /> */}
           <Button onClick={() => googlelogin()}>Login</Button>
         </Button.Group>
       </div>
