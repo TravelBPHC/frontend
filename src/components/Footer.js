@@ -92,10 +92,7 @@ function Footer() {
 
       <Text className={classes.text}>
         Made with ❤️ by{" "}
-        <a
-          target={"_blank"}
-          href="https://www.linkedin.com/in/aarush-sinha-66a790201/"
-        >
+        <a target={"_blank"} href="https://www.linkedin.com/in/aarush-sinha/">
           AARUSH
         </a>{" "}
         &{" "}

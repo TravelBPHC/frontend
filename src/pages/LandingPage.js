@@ -7,10 +7,12 @@ import {
   Title,
   BackgroundImage,
   Center,
+  Notification,
 } from "@mantine/core";
 import React from "react";
 import BG from "../assets/bg.jpg";
 import { useGoogleLogin } from "@react-oauth/google";
+import { IconBrandGoogle } from "@tabler/icons";
 
 const useStyles = createStyles((theme) => ({
   Textbox: {
@@ -95,14 +97,14 @@ function LandingPage({ loggedIn, setLoggedIn }) {
   const googlelogin = useGoogleLogin({
     flow: "auth-code",
     onSuccess: (TokenResponse) => {
-      // console.log(TokenResponse);
+      console.log(TokenResponse);
       var xhr = new XMLHttpRequest();
       xhr.open("POST", `${process.env.REACT_APP_ROOT_URL}/user/auth`);
       xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
       xhr.send("code=" + TokenResponse.code);
       xhr.onload = function () {
         let data = JSON.parse(xhr.responseText);
-        console.log("Signed in as: ", data);
+        // console.log("Signed in as: ", data);
         localStorage.setItem("SavedToken", "Bearer " + data.token);
         localStorage.setItem("accessToken", "Bearer " + data.g_access_token);
         localStorage.setItem("refreshToken", data.g_refresh_token);
@@ -114,7 +116,7 @@ function LandingPage({ loggedIn, setLoggedIn }) {
         setLoggedIn(true);
       };
     },
-    scope: ["https://www.googleapis.com/auth/calendar"],
+    // scope: ["https://www.googleapis.com/auth/calendar"],
   });
 
   React.useEffect(() => {}, [loggedIn]);
@@ -130,7 +132,9 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           Travelling together was never simpler!
         </Title>
         <Button.Group className={classes.ButtonGroup}>
-          <Button onClick={() => googlelogin()}>Login</Button>
+          <Button onClick={() => googlelogin()} leftIcon={<IconBrandGoogle />}>
+            Google Login
+          </Button>
         </Button.Group>
       </div>
     </>

@@ -573,7 +573,7 @@ export default function CustomDiv({ type, item, email }) {
               ))
             ) : (
               <Center style={{ width: "100%", height: "100%" }}>
-                <NothingSVG width="20px" />
+                <NothingSVG />
               </Center>
             )}
           </div>

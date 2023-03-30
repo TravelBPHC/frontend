@@ -236,13 +236,13 @@ function ChooseVendorPage() {
       <Grid columns={12} gutter={"xl"}>
         <Grid.Col lg={8} className={classes.wrapper}>
           <Text className={classes.pageTitle}>Available Vendors</Text>
-          <Button
+          {/* <Button
             sx={{ marginTop: 10, backgroundColor: "green" }}
             onClick={() => setBusModal((busModal) => !busModal)}
           >
             <IconLeaf /> Bus Schedule
           </Button>
-          <Bus opened={busModal} setOpened={setBusModal} />
+          <Bus opened={busModal} setOpened={setBusModal} /> */}
           <Text className={classes.pageSubtitle}>Cabs</Text>
           <div className={classes.vendorGroup}>
             <Accordion variant="contained">
