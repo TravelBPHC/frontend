@@ -4,6 +4,7 @@ import "./index.css";
 import App from "./App";
 import { MantineProvider } from "@mantine/core";
 import { CustomFont } from "./utils/CustomFont";
+import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -61,3 +62,5 @@ root.render(
     </MantineProvider>
   </React.StrictMode>
 );
+
+serviceWorkerRegistration.unregister();
