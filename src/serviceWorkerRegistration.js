@@ -22,7 +22,7 @@ const isLocalhost = Boolean(
 
 export function register(config) {
   if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/service-worker.js", {
+    navigator.serviceWorker.register("./service-worker.js", {
       updateViaCache: "all",
     });
     // The URL constructor is available in all browsers that support SW.
