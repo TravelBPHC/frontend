@@ -133,7 +133,7 @@ function LandingPage({ loggedIn, setLoggedIn }) {
         </Title>
         <Button.Group className={classes.ButtonGroup}>
           <Button onClick={() => googlelogin()} leftIcon={<IconBrandGoogle />}>
-            Go
+            Gooog
           </Button>
         </Button.Group>
       </div>

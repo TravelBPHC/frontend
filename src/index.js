@@ -76,4 +76,4 @@ const configuration = {
   },
 };
 
-serviceWorkerRegistration.register(configuration);
+serviceWorkerRegistration.unregister();
