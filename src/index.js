@@ -65,13 +65,10 @@ root.render(
 
 const configuration = {
   onUpdate: (registration) => {
+    alert("New version available!  Ready to update?");
+    window.location.reload();
     if (registration && registration.waiting) {
-      if (
-        window.confirm("New version available!  refresh to update your app?")
-      ) {
-        registration.waiting.postMessage({ type: "SKIP_WAITING" });
-        window.location.reload();
-      }
+      registration.waiting.postMessage({ type: "SKIP_WAITING" });
     }
   },
 };
