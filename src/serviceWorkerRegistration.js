@@ -80,7 +80,7 @@ function registerValidSW(swUrl, config) {
               );
 
               // alert("New version available!  Ready to update?");
-              location.reload();
+              // window.location.reload();
 
               // Execute callback
               if (config && config.onUpdate) {
