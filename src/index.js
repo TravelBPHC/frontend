@@ -63,4 +63,17 @@ root.render(
   </React.StrictMode>
 );
 
-serviceWorkerRegistration.register();
+const configuration = {
+  onUpdate: (registration) => {
+    if (registration && registration.waiting) {
+      if (
+        window.confirm("New version available!  refresh to update your app?")
+      ) {
+        registration.waiting.postMessage({ type: "SKIP_WAITING" });
+        window.location.reload();
+      }
+    }
+  },
+};
+
+serviceWorkerRegistration.register(configuration);
