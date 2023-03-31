@@ -187,6 +187,8 @@ function CreatePostPage() {
     }
   };
 
+  console.log(member);
+
   const Update = async () => {
     console.log(dayjs(leavingTime).format("HH:mm:ss"));
     await axios({
@@ -334,7 +336,9 @@ function CreatePostPage() {
                 placeholder="Type mail or name"
                 className={classes.form}
                 limit={3}
-                onChange={(item) => setMember(member.add(item))}
+                onChange={(item) =>
+                  item.length == 37 ? setMember(member.add(item)) : null
+                }
                 data={allUsers}
                 filter={(value, item) =>
                   item?.value
