@@ -133,7 +133,7 @@ function LandingPage({ loggedIn, setLoggedIn }) {
         </Title>
         <Button.Group className={classes.ButtonGroup}>
           <Button onClick={() => googlelogin()} leftIcon={<IconBrandGoogle />}>
-            Login with BITS Mail
+            BITS Mail Login
           </Button>
         </Button.Group>
       </div>
