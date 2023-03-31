@@ -10,6 +10,9 @@ const useStyles = createStyles((theme) => ({
     borderRadius: 999,
     background: "linear-gradient(#FD008C, #7901FF, #0097FF)",
     transitionDuration: "0.2s",
+    fontSize: 20,
+    cursor: "pointer",
+    padding: 10,
 
     "&:hover": {
       transform: "scale(1.2)",
@@ -39,9 +42,9 @@ function CreatePostButton() {
       position={{ bottom: 20, right: 20 }}
       onClick={() => navigate("/create-post")}
     >
-      <Button className={classes.Button}>
-        <IconPlus />
-      </Button>
+      {/* <Button> */}
+      <IconPlus className={classes.Button} />
+      {/* </Button> */}
     </Affix>
   );
 }

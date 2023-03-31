@@ -159,6 +159,9 @@ function Navbar({ loggedIn, setLoggedIn }) {
             <Link to="/pending-approval">
               <Menu.Item>Pending Approvals</Menu.Item>
             </Link>
+            <a href="https://forms.gle/Uz8zW3HQnVtG1yJf6" target="_blank">
+              <Menu.Item>Feedback / Suggestion</Menu.Item>
+            </a>
 
             <Menu.Divider />
 

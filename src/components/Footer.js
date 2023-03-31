@@ -92,10 +92,7 @@ function Footer() {
 
       <Text className={classes.text}>
         Made with ❤️ by{" "}
-        <a
-          target={"_blank"}
-          href="https://www.linkedin.com/in/aarush-sinha-66a790201/"
-        >
+        <a target={"_blank"} href="https://www.linkedin.com/in/aarush-sinha/">
           AARUSH
         </a>{" "}
         &{" "}
@@ -120,6 +117,9 @@ function Footer() {
         <Link to="/pending-approval" exact>
           <Text>Approval</Text>
         </Link>
+        <a href="https://forms.gle/Uz8zW3HQnVtG1yJf6" target="_blank">
+          <Text>Feedback</Text>
+        </a>
       </Center>
       {/* <Text className={classes.copyright}>© Travel@BPHC 2022</Text> */}
     </div>
