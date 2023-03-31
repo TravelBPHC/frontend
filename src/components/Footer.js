@@ -117,6 +117,9 @@ function Footer() {
         <Link to="/pending-approval" exact>
           <Text>Approval</Text>
         </Link>
+        <a href="https://forms.gle/Uz8zW3HQnVtG1yJf6" target="_blank">
+          <Text>Feedback</Text>
+        </a>
       </Center>
       {/* <Text className={classes.copyright}>© Travel@BPHC 2022</Text> */}
     </div>
