@@ -69,7 +69,7 @@ const configuration = {
       if (
         window.confirm("New version available!  refresh to update your app?")
       ) {
-        // window.location.reload();
+        window.location.reload();
         registration.waiting.postMessage({ type: "SKIP_WAITING" });
       }
     }
