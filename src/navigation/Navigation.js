@@ -20,6 +20,7 @@ import Footer from "../components/Footer";
 import { UserContext } from "../utils/Context";
 import axios from "axios";
 import CO2 from "../pages/CO2";
+import { checkEvent } from "../utils/CalendarApi";
 
 function Navigation() {
   const [loggedIn, setLoggedIn] = React.useState(
@@ -60,7 +61,6 @@ function Navigation() {
           headers: { Authorization: localStorage.getItem("SavedToken") },
         }
       );
-      setUpcomingTrips(data.data);
       data.data?.map(async (item) => {
         if (new Date(item.departure_date) < new Date()) {
           await axios({
@@ -71,8 +71,14 @@ function Navigation() {
               trip_id: item.id,
             },
           });
+        } else {
+          const result = await checkEvent(
+            item.creator.email.slice(0, 9) + item.id
+          );
+          item.addedInCalendar = result;
         }
       });
+      setUpcomingTrips(data?.data);
     },
     [upcomingTrips]
   );
@@ -129,15 +135,6 @@ function Navigation() {
     }),
     [userDetail, upcomingTrips, pastTrips, sentRequests, recievedRequests]
   );
-
-  // const config = {
-  //   clientId: "<CLIENT_ID>",
-  //   apiKey: "<API_KEY>",
-  //   scope: "https://www.googleapis.com/auth/calendar",
-  //   discoveryDocs: [
-  //     "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
-  //   ],
-  // };
 
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_KEY}>

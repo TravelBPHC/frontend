@@ -116,7 +116,7 @@ function LandingPage({ loggedIn, setLoggedIn }) {
         setLoggedIn(true);
       };
     },
-    // scope: ["https://www.googleapis.com/auth/calendar"],
+    scope: ["https://www.googleapis.com/auth/calendar"],
   });
 
   React.useEffect(() => {}, [loggedIn]);
