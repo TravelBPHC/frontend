@@ -22,10 +22,17 @@ import axios from "axios";
 import CO2 from "../pages/CO2";
 import { checkEvent } from "../utils/CalendarApi";
 import { websockets } from "../utils/websocket";
-import * as serviceWorkerRegistration from "../serviceWorkerRegistration";
 
-var webSocket = new WebSocket(
-  "ws://" + "127.0.0.1:8000" + "/ws/notifications/"
+var webSocket_request_created = new WebSocket(
+  `${process.env.REACT_APP_WEBSOCKET_URL}/request-created/`
+);
+
+var webSocket_request_modified = new WebSocket(
+  `${process.env.REACT_APP_WEBSOCKET_URL}/request-modified/`
+);
+
+var webSocket_trip_created = new WebSocket(
+  `${process.env.REACT_APP_WEBSOCKET_URL}/trip-created/`
 );
 
 function Navigation() {
@@ -179,15 +186,29 @@ function Navigation() {
   );
   React.useEffect(() => {
     websockets(
-      webSocket,
+      webSocket_request_created,
       userDetail,
       setRecievedRequests,
       setSentRequests,
       setPosts
     );
-  }, []);
+    websockets(
+      webSocket_request_modified,
+      userDetail,
+      setRecievedRequests,
+      setSentRequests,
+      setPosts
+    );
+    websockets(
+      webSocket_trip_created,
+      userDetail,
+      setRecievedRequests,
+      setSentRequests,
+      setPosts
+    );
+  }, [recievedRequests, sentRequests, posts]);
 
-  console.log("recievedRequests", recievedRequests);
+  console.log("posts : ", posts);
 
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_KEY}>

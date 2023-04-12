@@ -115,7 +115,7 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           Date.now() + (data.expires_in - 30) * 1000
         );
 
-        register();
+        // register();
 
         setLoggedIn(true);
       };

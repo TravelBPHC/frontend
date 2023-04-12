@@ -154,7 +154,8 @@ function registerValidSW(swUrl, config) {
 
         localStorage.setItem("subscription", JSON.stringify(pushSubscription));
         console.log("Subscribed to push notifs");
-        sendSubscriptionToBackEnd(JSON.stringify(pushSubscription));
+        // uncomment to start Push Notifs
+        // sendSubscriptionToBackEnd(JSON.stringify(pushSubscription));
       })
       .catch((error) => {
         console.error("Error during service worker registration:", error);
