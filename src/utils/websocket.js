@@ -10,7 +10,6 @@ export const websockets = (
   // );
 
   webSocket.onopen = function (e) {
-    console.log("here");
     webSocket.send(
       JSON.stringify({
         message: "Hello, World!",
@@ -34,82 +33,82 @@ export const websockets = (
     if (data?.message?.id != undefined) {
       console.log(data?.message);
       console.log(userDetail?.email);
-      if (Object.keys(data?.message).length === 9) {
-        if (data.message.reciever.email === userDetail?.email) {
-          if (data.message.status === "Rejected") {
-            setRecievedRequests((prev) => {
-              const list = prev.map((item) => {
-                if (item.id === data.message.id) {
-                  item.status = "Rejected";
-                }
-                return item;
-              });
-              return list;
-            });
-          } else if (data.message.status === "Accepted") {
-            setRecievedRequests((prev) => {
-              const list = prev.map((item) => {
-                if (item.id === data.message.id) {
-                  item.status = "Accepted";
-                }
-                return item;
-              });
-              return list;
-            });
-          } else {
-            setRecievedRequests((prev) => [...prev, data.message]);
-          }
-        }
+      // if (Object.keys(data?.message).length === 9) {
+      //   if (data.message.reciever.email === userDetail?.email) {
+      //     if (data.message.status === "Rejected") {
+      //       setRecievedRequests((prev) => {
+      //         const list = prev.map((item) => {
+      //           if (item.id === data.message.id) {
+      //             item.status = "Rejected";
+      //           }
+      //           return item;
+      //         });
+      //         return list;
+      //       });
+      //     } else if (data.message.status === "Accepted") {
+      //       setRecievedRequests((prev) => {
+      //         const list = prev.map((item) => {
+      //           if (item.id === data.message.id) {
+      //             item.status = "Accepted";
+      //           }
+      //           return item;
+      //         });
+      //         return list;
+      //       });
+      //     } else {
+      //       setRecievedRequests((prev) => [...prev, data.message]);
+      //     }
+      //   }
 
-        if (data.message.sender === userDetail.email) {
-          if (data.message.status === "Rejected") {
-            setSentRequests((prev) => {
-              const list = prev.map((item) => {
-                if (item.id === data.message.id) {
-                  item.status = "Rejected";
-                }
-                return item;
-              });
-              return list;
-            });
+      //   if (data.message.sender === userDetail.email) {
+      //     if (data.message.status === "Rejected") {
+      //       setSentRequests((prev) => {
+      //         const list = prev.map((item) => {
+      //           if (item.id === data.message.id) {
+      //             item.status = "Rejected";
+      //           }
+      //           return item;
+      //         });
+      //         return list;
+      //       });
 
-            setPosts((prev) => {
-              const list = prev.map((item) => {
-                if (item.id === data.message.id) {
-                  if (item.sender === userDetail.email) {
-                    item.status = "Rejected";
-                  }
-                }
-                return item;
-              });
-              return list;
-            });
-          } else if (data.message.status === "Accepted") {
-            setSentRequests((prev) => {
-              const list = prev.map((item) => {
-                if (item.id === data.message.id) {
-                  item.status = "Accepted";
-                }
-                return item;
-              });
-              return list;
-            });
-            setPosts((prev) => {
-              const list = prev.map((item) => {
-                if (item.id === data.message.id) {
-                  if (item.sender === userDetail.email) {
-                    item.status = "Accepted";
-                  }
-                }
-                return item;
-              });
-              return list;
-            });
-          } else {
-            setSentRequests((prev) => [...prev, data.message]);
-          }
-        }
-      }
+      //       setPosts((prev) => {
+      //         const list = prev.map((item) => {
+      //           if (item.id === data.message.id) {
+      //             if (item.sender === userDetail.email) {
+      //               item.status = "Rejected";
+      //             }
+      //           }
+      //           return item;
+      //         });
+      //         return list;
+      //       });
+      //     } else if (data.message.status === "Accepted") {
+      //       setSentRequests((prev) => {
+      //         const list = prev.map((item) => {
+      //           if (item.id === data.message.id) {
+      //             item.status = "Accepted";
+      //           }
+      //           return item;
+      //         });
+      //         return list;
+      //       });
+      //       setPosts((prev) => {
+      //         const list = prev.map((item) => {
+      //           if (item.id === data.message.id) {
+      //             if (item.sender === userDetail.email) {
+      //               item.status = "Accepted";
+      //             }
+      //           }
+      //           return item;
+      //         });
+      //         return list;
+      //       });
+      //     } else {
+      //       setSentRequests((prev) => [...prev, data.message]);
+      //     }
+      //   }
+      // }
       if (Object.keys(data?.message).length === 16) {
         setPosts((prev) => [...prev, data.message]);
       }

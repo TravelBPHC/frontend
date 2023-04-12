@@ -63,38 +63,23 @@ root.render(
   </React.StrictMode>
 );
 
-// const configuration = {
+// serviceWorkerRegistration.register({
 //   onUpdate: (registration) => {
-//     if (registration && registration.waiting) {
-//       if (
-//         window.confirm("New version available!  refresh to update your app?")
-//       ) {
-//         window.location.reload(true);
-//         registration.waiting.postMessage({ type: "SKIP_WAITING" });
-//       }
+//     const waitingServiceWorker = registration.waiting;
+
+//     if (waitingServiceWorker) {
+//       waitingServiceWorker.addEventListener("statechange", (event) => {
+//         if (event.target.state === "activated") {
+//           if (
+//             window.confirm(
+//               "There is a new version of the app ready. Please reload to update."
+//             )
+//           ) {
+//             window.location.reload();
+//           }
+//         }
+//       });
+//       waitingServiceWorker.postMessage({ type: "SKIP_WAITING" });
 //     }
 //   },
-// };
-
-// serviceWorkerRegistration.register(configuration);
-
-serviceWorkerRegistration.register({
-  onUpdate: (registration) => {
-    const waitingServiceWorker = registration.waiting;
-
-    if (waitingServiceWorker) {
-      waitingServiceWorker.addEventListener("statechange", (event) => {
-        if (event.target.state === "activated") {
-          if (
-            window.confirm(
-              "There is a new version of the app ready. Please reload to update."
-            )
-          ) {
-            window.location.reload();
-          }
-        }
-      });
-      waitingServiceWorker.postMessage({ type: "SKIP_WAITING" });
-    }
-  },
-});
+// });

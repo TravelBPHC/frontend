@@ -220,7 +220,7 @@ function Dashboard() {
               c="dimmed"
               onClick={() => setAccountToggle(!accountToggle)}
             >
-              Account info{" "}
+              Accoussssnt info{" "}
               {!accountToggle ? (
                 <IconChevronDown size={14} />
               ) : (

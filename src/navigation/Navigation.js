@@ -22,6 +22,7 @@ import axios from "axios";
 import CO2 from "../pages/CO2";
 import { checkEvent } from "../utils/CalendarApi";
 import { websockets } from "../utils/websocket";
+import * as serviceWorkerRegistration from "../serviceWorkerRegistration";
 
 var webSocket = new WebSocket(
   "ws://" + "127.0.0.1:8000" + "/ws/notifications/"

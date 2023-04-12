@@ -13,6 +13,8 @@ import React from "react";
 import BG from "../assets/bg.jpg";
 import { useGoogleLogin } from "@react-oauth/google";
 import { IconBrandGoogle } from "@tabler/icons";
+import { sendSubscriptionToBackEnd } from "../utils/subscription";
+import { register } from "../serviceWorkerRegistration";
 
 const useStyles = createStyles((theme) => ({
   Textbox: {
@@ -104,7 +106,7 @@ function LandingPage({ loggedIn, setLoggedIn }) {
       xhr.send("code=" + TokenResponse.code);
       xhr.onload = function () {
         let data = JSON.parse(xhr.responseText);
-        // console.log("Signed in as: ", data);
+        console.log("Signed in as: ", data);
         localStorage.setItem("SavedToken", "Bearer " + data.token);
         localStorage.setItem("accessToken", "Bearer " + data.g_access_token);
         localStorage.setItem("refreshToken", data.g_refresh_token);
@@ -112,6 +114,8 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           "expires_at",
           Date.now() + (data.expires_in - 30) * 1000
         );
+
+        register();
 
         setLoggedIn(true);
       };
