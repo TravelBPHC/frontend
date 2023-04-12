@@ -21,6 +21,11 @@ import { UserContext } from "../utils/Context";
 import axios from "axios";
 import CO2 from "../pages/CO2";
 import { checkEvent } from "../utils/CalendarApi";
+import { websockets } from "../utils/websocket";
+
+var webSocket = new WebSocket(
+  "ws://" + "127.0.0.1:8000" + "/ws/notifications/"
+);
 
 function Navigation() {
   const [loggedIn, setLoggedIn] = React.useState(
@@ -28,6 +33,7 @@ function Navigation() {
   );
 
   const [userDetail, setUserDetail] = React.useState(null);
+  const [posts, setPosts] = React.useState(null);
   const [upcomingTrips, setUpcomingTrips] = React.useState(null);
   const [pastTrips, setPastTrips] = React.useState(null);
   const [sentRequests, setSentRequests] = React.useState(null);
@@ -36,6 +42,7 @@ function Navigation() {
   React.useEffect(() => {
     if (loggedIn) {
       getUserData();
+      getAllPosts();
       getupcomingTrips();
       getPastTrips();
       getSentRequests();
@@ -122,9 +129,36 @@ function Navigation() {
     [recievedRequests]
   );
 
+  const getAllPosts = React.useCallback(
+    async (response) => {
+      const data = await axios.get(
+        `${process.env.REACT_APP_ROOT_URL}/api/trip/all-active`,
+        {
+          headers: { Authorization: localStorage.getItem("SavedToken") },
+        }
+      );
+      setPosts(data.data);
+      data.data?.map(async (item) => {
+        if (new Date(item.departure_date) < new Date()) {
+          await axios({
+            method: "post",
+            url: `${process.env.REACT_APP_ROOT_URL}/api/trip/done`,
+            headers: { Authorization: localStorage.getItem("SavedToken") },
+            data: {
+              trip_id: item.id,
+            },
+          });
+        }
+      });
+    },
+    [posts]
+  );
+
   const contextValue = React.useMemo(
     () => ({
       userDetail,
+      posts,
+      setPosts,
       upcomingTrips,
       setUpcomingTrips,
       pastTrips,
@@ -133,8 +167,26 @@ function Navigation() {
       recievedRequests,
       setRecievedRequests,
     }),
-    [userDetail, upcomingTrips, pastTrips, sentRequests, recievedRequests]
+    [
+      userDetail,
+      posts,
+      upcomingTrips,
+      pastTrips,
+      sentRequests,
+      recievedRequests,
+    ]
   );
+  React.useEffect(() => {
+    websockets(
+      webSocket,
+      userDetail,
+      setRecievedRequests,
+      setSentRequests,
+      setPosts
+    );
+  }, []);
+
+  console.log("recievedRequests", recievedRequests);
 
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_KEY}>

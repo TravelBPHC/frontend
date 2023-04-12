@@ -320,7 +320,6 @@ export default function CustomDiv({ type, item, email }) {
 
   React.useEffect(() => {}, [upcomingTrips, setUpcomingTrips]);
 
-  console.log(upcomingTrips);
   switch (type) {
     case 1:
       let match = item?.requests.filter(
@@ -345,7 +344,7 @@ export default function CustomDiv({ type, item, email }) {
               </div>
               <div className={classes.text}>
                 <Text c="dimmed">Space Available: </Text>
-                <Text>{item.seats - item.passengers.length}</Text>
+                <Text>{item.vacancies}</Text>
               </div>
               <div className={classes.text}>
                 <Text c="dimmed">Waiting time: </Text>

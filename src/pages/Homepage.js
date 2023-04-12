@@ -139,10 +139,10 @@ const useStyles = createStyles((theme) => ({
 }));
 
 function Homepage() {
-  const { userDetail } = React.useContext(UserContext);
+  const { userDetail, posts, setPosts } = React.useContext(UserContext);
   const { classes } = useStyles();
   let navigate = useNavigate();
-  const [posts, setPosts] = React.useState(null);
+
   // const [email, setEmail] = React.useState();
   const [dest, setDest] = React.useState("");
   const [src, setSrc] = React.useState("");
@@ -150,36 +150,6 @@ function Homepage() {
   const [opened, setOpened] = React.useState(false);
   const [pageLoading, setPageLoading] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
-
-  React.useEffect(() => {
-    getAllPosts();
-  }, [setPosts]);
-
-  const getAllPosts = React.useCallback(
-    async (response) => {
-      const data = await axios.get(
-        `${process.env.REACT_APP_ROOT_URL}/api/trip/all-active`,
-        {
-          headers: { Authorization: localStorage.getItem("SavedToken") },
-        }
-      );
-      setPosts(data.data);
-
-      data.data?.map(async (item) => {
-        if (new Date(item.departure_date) < new Date()) {
-          await axios({
-            method: "post",
-            url: `${process.env.REACT_APP_ROOT_URL}/api/trip/done`,
-            headers: { Authorization: localStorage.getItem("SavedToken") },
-            data: {
-              trip_id: item.id,
-            },
-          });
-        }
-      });
-    },
-    [posts]
-  );
 
   if (pageLoading && posts && userDetail) {
     setPageLoading(false);

@@ -53,7 +53,7 @@ const checkEvent = async (id) => {
     console.log(response.status);
     return true;
   } catch (error) {
-    console.log(error.response.status);
+    // console.log(error.response.status);
     return false;
   }
 };
