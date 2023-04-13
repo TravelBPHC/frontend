@@ -20,6 +20,20 @@ import Footer from "../components/Footer";
 import { UserContext } from "../utils/Context";
 import axios from "axios";
 import CO2 from "../pages/CO2";
+// import { checkEvent } from "../utils/CalendarApi";
+import { websockets } from "../utils/websocket";
+
+var webSocket_request_created = new WebSocket(
+  `${process.env.REACT_APP_WEBSOCKET_URL}/request-created/`
+);
+
+var webSocket_request_modified = new WebSocket(
+  `${process.env.REACT_APP_WEBSOCKET_URL}/request-modified/`
+);
+
+var webSocket_trip_created = new WebSocket(
+  `${process.env.REACT_APP_WEBSOCKET_URL}/trip-created/`
+);
 
 function Navigation() {
   const [loggedIn, setLoggedIn] = React.useState(
@@ -27,6 +41,7 @@ function Navigation() {
   );
 
   const [userDetail, setUserDetail] = React.useState(null);
+  const [posts, setPosts] = React.useState(null);
   const [upcomingTrips, setUpcomingTrips] = React.useState(null);
   const [pastTrips, setPastTrips] = React.useState(null);
   const [sentRequests, setSentRequests] = React.useState(null);
@@ -35,6 +50,7 @@ function Navigation() {
   React.useEffect(() => {
     if (loggedIn) {
       getUserData();
+      getAllPosts();
       getupcomingTrips();
       getPastTrips();
       getSentRequests();
@@ -60,7 +76,6 @@ function Navigation() {
           headers: { Authorization: localStorage.getItem("SavedToken") },
         }
       );
-      setUpcomingTrips(data.data);
       data.data?.map(async (item) => {
         if (new Date(item.departure_date) < new Date()) {
           await axios({
@@ -72,7 +87,14 @@ function Navigation() {
             },
           });
         }
+        // else {
+        //   const result = await checkEvent(
+        //     item.creator.email.slice(0, 9) + item.id
+        //   );
+        //   item.addedInCalendar = result;
+        // }
       });
+      setUpcomingTrips(data?.data);
     },
     [upcomingTrips]
   );
@@ -116,9 +138,36 @@ function Navigation() {
     [recievedRequests]
   );
 
+  const getAllPosts = React.useCallback(
+    async (response) => {
+      const data = await axios.get(
+        `${process.env.REACT_APP_ROOT_URL}/api/trip/all-active`,
+        {
+          headers: { Authorization: localStorage.getItem("SavedToken") },
+        }
+      );
+      setPosts(data.data);
+      data.data?.map(async (item) => {
+        if (new Date(item.departure_date) < new Date()) {
+          await axios({
+            method: "post",
+            url: `${process.env.REACT_APP_ROOT_URL}/api/trip/done`,
+            headers: { Authorization: localStorage.getItem("SavedToken") },
+            data: {
+              trip_id: item.id,
+            },
+          });
+        }
+      });
+    },
+    [posts]
+  );
+
   const contextValue = React.useMemo(
     () => ({
       userDetail,
+      posts,
+      setPosts,
       upcomingTrips,
       setUpcomingTrips,
       pastTrips,
@@ -127,17 +176,40 @@ function Navigation() {
       recievedRequests,
       setRecievedRequests,
     }),
-    [userDetail, upcomingTrips, pastTrips, sentRequests, recievedRequests]
+    [
+      userDetail,
+      posts,
+      upcomingTrips,
+      pastTrips,
+      sentRequests,
+      recievedRequests,
+    ]
   );
+  React.useEffect(() => {
+    websockets(
+      webSocket_request_created,
+      userDetail,
+      setRecievedRequests,
+      setSentRequests,
+      setPosts
+    );
+    websockets(
+      webSocket_request_modified,
+      userDetail,
+      setRecievedRequests,
+      setSentRequests,
+      setPosts
+    );
+    websockets(
+      webSocket_trip_created,
+      userDetail,
+      setRecievedRequests,
+      setSentRequests,
+      setPosts
+    );
+  }, [recievedRequests, sentRequests, posts]);
 
-  // const config = {
-  //   clientId: "<CLIENT_ID>",
-  //   apiKey: "<API_KEY>",
-  //   scope: "https://www.googleapis.com/auth/calendar",
-  //   discoveryDocs: [
-  //     "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
-  //   ],
-  // };
+  console.log("posts : ", posts);
 
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_KEY}>

@@ -10,12 +10,19 @@ import {
   Dialog,
   Text,
 } from "@mantine/core";
-import { IconCheck, IconEdit, IconX, IconTrash } from "@tabler/icons";
+import {
+  IconCheck,
+  IconEdit,
+  IconX,
+  IconTrash,
+  IconCalendar,
+} from "@tabler/icons";
 import { useNavigate } from "react-router";
 import dayjs from "dayjs";
 import axios from "axios";
 import { ReactComponent as NothingSVG } from "../assets/undraw_no_data.svg";
 import { UserContext } from "../utils/Context";
+// import { addEvent } from "../utils/CalendarApi";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -203,6 +210,7 @@ export default function CustomDiv({ type, item, email }) {
     recievedRequests,
     setSentRequests,
     setRecievedRequests,
+    setUpcomingTrips,
   } = React.useContext(UserContext);
   const { classes } = useStyles();
   const [showDetails, setShowDetails] = React.useState(false);
@@ -310,6 +318,8 @@ export default function CustomDiv({ type, item, email }) {
 
   React.useEffect(() => {}, [disabled]);
 
+  React.useEffect(() => {}, [upcomingTrips, setUpcomingTrips]);
+
   switch (type) {
     case 1:
       let match = item?.requests.filter(
@@ -334,7 +344,7 @@ export default function CustomDiv({ type, item, email }) {
               </div>
               <div className={classes.text}>
                 <Text c="dimmed">Space Available: </Text>
-                <Text>{item.seats - item.passengers.length}</Text>
+                <Text>{item.vacancies}</Text>
               </div>
               <div className={classes.text}>
                 <Text c="dimmed">Waiting time: </Text>
@@ -524,53 +534,71 @@ export default function CustomDiv({ type, item, email }) {
           </CardSection>
           <div className={classes.itemList}>
             {upcomingTrips?.length > 0 ? (
-              upcomingTrips.slice(0, 2)?.map((item, id) => (
-                <CardSection
-                  key={id}
-                  withBorder
-                  className={classes.Textbox}
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    <div className={classes.text}>
-                      <Text c="dimmed">From: </Text>
-                      <Text>{item.source.substring(0, 50)}</Text>
+              upcomingTrips.slice(0, 2)?.map((item, id) => {
+                return (
+                  <CardSection
+                    key={id}
+                    withBorder
+                    className={classes.Textbox}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <div className={classes.text}>
+                        <Text c="dimmed">From: </Text>
+                        <Text>{item.source.substring(0, 50)}</Text>
+                      </div>
+                      <div className={classes.text}>
+                        <Text c="dimmed">To: </Text>
+                        <Text>{item.destination.substring(0, 50)}</Text>
+                      </div>
+                      <div className={classes.text}>
+                        <Text c="dimmed">Date: </Text>
+                        <Text>{item.departure_date}</Text>
+                      </div>
                     </div>
-                    <div className={classes.text}>
-                      <Text c="dimmed">To: </Text>
-                      <Text>{item.destination.substring(0, 50)}</Text>
-                    </div>
-                    <div className={classes.text}>
-                      <Text c="dimmed">Date: </Text>
-                      <Text>{item.departure_date}</Text>
-                    </div>
-                  </div>
-                  {/* <Button
-                  leftIcon={<IconCheck />}
-                  variant="outline"
-                  color="blue"
-                  style={{ marginRight: 0 }}
-                  classNames={{ root: classes.roundedButton }}
-                  styles={(theme) => ({
-                    root: {
-                      transitionDuration: "0.2s",
-                      padding: 8,
-                      "&:hover": {
-                        color: theme.fn.lighten("#0059C5", 0.1),
-                        borderColor: theme.fn.lighten("#0059C5", 0.1),
-                      },
-                    },
-                  })}
-                >
-                  Add to Calendar
-                </Button> */}
-                </CardSection>
-              ))
+                    {/* <Button
+                      leftIcon={<IconCalendar size={16} />}
+                      variant="outline"
+                      color="blue"
+                      style={{ marginRight: 0, fontSize: 12 }}
+                      classNames={{ root: classes.roundedButton }}
+                      styles={(theme) => ({
+                        root: {
+                          transitionDuration: "0.2s",
+                          padding: 6,
+                          "&:hover": {
+                            color: theme.fn.lighten("#0059C5", 0.1),
+                            borderColor: theme.fn.lighten("#0059C5", 0.1),
+                          },
+                        },
+                      })}
+                      onClick={() => {
+                        const dt = new Date(
+                          item.departure_date + "T" + item.departure_time
+                        );
+                        const dat = new Date(dt.getTime() + 60 * 60000);
+                        addEvent(
+                          item.departure_date +
+                            "T" +
+                            item.departure_time +
+                            "+05:30",
+                          dat.toISOString(),
+                          "Trip to " + item.destination,
+                          item.creator.email.slice(0, 9) + item.id
+                        );
+                      }}
+                      disabled={item?.addedInCalendar}
+                    >
+                      {item.addedInCalendar ? "Added" : "Add to Calendar"}
+                    </Button> */}
+                  </CardSection>
+                );
+              })
             ) : (
               <Center style={{ width: "100%", height: "100%" }}>
                 <NothingSVG />

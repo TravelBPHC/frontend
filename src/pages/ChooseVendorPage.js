@@ -191,6 +191,8 @@ function ChooseVendorPage() {
   let navigate = useNavigate();
   const { state } = useLocation();
 
+  console.log(state);
+
   const Trip = async () => {
     setLoading(true);
     await axios({

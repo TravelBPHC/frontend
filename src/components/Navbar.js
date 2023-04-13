@@ -6,6 +6,7 @@ import axios from "axios";
 import { googleLogout } from "@react-oauth/google";
 import { ReactComponent as Logo } from "../assets/travelbphc-logo-sm.svg";
 import { UserContext } from "../utils/Context";
+import { unregister } from "../serviceWorkerRegistration";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -97,6 +98,8 @@ function Navbar({ loggedIn, setLoggedIn }) {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("expires_at");
+    localStorage.removeItem("subscription");
+    unregister();
 
     setLoggedIn(false);
     googleLogout();
