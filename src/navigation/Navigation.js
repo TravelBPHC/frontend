@@ -20,7 +20,7 @@ import Footer from "../components/Footer";
 import { UserContext } from "../utils/Context";
 import axios from "axios";
 import CO2 from "../pages/CO2";
-import { checkEvent } from "../utils/CalendarApi";
+// import { checkEvent } from "../utils/CalendarApi";
 import { websockets } from "../utils/websocket";
 
 var webSocket_request_created = new WebSocket(
@@ -86,12 +86,13 @@ function Navigation() {
               trip_id: item.id,
             },
           });
-        } else {
-          const result = await checkEvent(
-            item.creator.email.slice(0, 9) + item.id
-          );
-          item.addedInCalendar = result;
         }
+        // else {
+        //   const result = await checkEvent(
+        //     item.creator.email.slice(0, 9) + item.id
+        //   );
+        //   item.addedInCalendar = result;
+        // }
       });
       setUpcomingTrips(data?.data);
     },

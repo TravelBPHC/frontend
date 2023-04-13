@@ -22,7 +22,6 @@ import axios from "axios";
 import CustomDiv from "../components/CustomDiv";
 import { useMediaQuery } from "@mantine/hooks";
 import { UserContext } from "../utils/Context";
-import addEvent from "../utils/CalendarApi";
 
 const useStyles = createStyles((theme) => ({
   Title: {

@@ -22,7 +22,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 import { ReactComponent as NothingSVG } from "../assets/undraw_no_data.svg";
 import { UserContext } from "../utils/Context";
-import { addEvent } from "../utils/CalendarApi";
+// import { addEvent } from "../utils/CalendarApi";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -561,7 +561,7 @@ export default function CustomDiv({ type, item, email }) {
                         <Text>{item.departure_date}</Text>
                       </div>
                     </div>
-                    <Button
+                    {/* <Button
                       leftIcon={<IconCalendar size={16} />}
                       variant="outline"
                       color="blue"
@@ -595,7 +595,7 @@ export default function CustomDiv({ type, item, email }) {
                       disabled={item?.addedInCalendar}
                     >
                       {item.addedInCalendar ? "Added" : "Add to Calendar"}
-                    </Button>
+                    </Button> */}
                   </CardSection>
                 );
               })

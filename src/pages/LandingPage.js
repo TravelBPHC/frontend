@@ -115,12 +115,12 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           Date.now() + (data.expires_in - 30) * 1000
         );
 
-        // register();
+        register();
 
         setLoggedIn(true);
       };
     },
-    scope: ["https://www.googleapis.com/auth/calendar"],
+    // scope: ["https://www.googleapis.com/auth/calendar"],
   });
 
   React.useEffect(() => {}, [loggedIn]);

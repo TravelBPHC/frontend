@@ -18,58 +18,58 @@ const VERSION = require("../package.json").version;
 // Uncomment 21 to 72 for Push Notifs
 
 /* eslint-disable-next-line no-restricted-globals */
-// self.addEventListener("push", async function async(event) {
-//   console.log("Push Notification received", event);
-//   const data = await event?.data.json();
-//   try {
-//     console.log("Push Notification DATA: ", data);
-//     let message = "";
-//     let title = "";
-//     if (data?.type === "request accepted") {
-//       title = "Request Accepted!";
-//       message =
-//         "Your request for the trip to " +
-//         data?.destination +
-//         "on " +
-//         // change date to departure_date everywhere
-//         data?.departure_date +
-//         " has been accepted by " +
-//         data?.sender +
-//         "!";
-//     } else if (data?.type === "request rejected") {
-//       title = "Request Rejected";
-//       message =
-//         "Your request for the trip to " +
-//         data?.destination +
-//         "on " +
-//         data?.departure_date +
-//         " has been rejected by " +
-//         data?.sender;
-//     } else if (data?.type === "new request") {
-//       console.log("new request");
-//       title = "New Request";
-//       message =
-//         data?.sender +
-//         " wants to travel with you on " +
-//         data?.departure_date +
-//         " to " +
-//         data?.destination;
-//     } else {
-//       title = "Error";
-//       message = "Something went wrong";
-//     }
+self.addEventListener("push", async function async(event) {
+  console.log("Push Notification received", event);
+  const data = await event?.data.json();
+  try {
+    console.log("Push Notification DATA: ", data);
+    let message = "";
+    let title = "";
+    if (data?.type === "request accepted") {
+      title = "Request Accepted!";
+      message =
+        "Your request for the trip to " +
+        data?.destination +
+        "on " +
+        // change date to departure_date everywhere
+        data?.departure_date +
+        " has been accepted by " +
+        data?.sender +
+        "!";
+    } else if (data?.type === "request rejected") {
+      title = "Request Rejected";
+      message =
+        "Your request for the trip to " +
+        data?.destination +
+        "on " +
+        data?.departure_date +
+        " has been rejected by " +
+        data?.sender;
+    } else if (data?.type === "new request") {
+      console.log("new request");
+      title = "New Request";
+      message =
+        data?.sender +
+        " wants to travel with you on " +
+        data?.departure_date +
+        " to " +
+        data?.destination;
+    } else {
+      title = "Error";
+      message = "Something went wrong";
+    }
 
-//     /* eslint-disable-next-line no-restricted-globals */
-//     self.registration.showNotification(title, { body: message });
-//   } catch (error) {
-//     console.log("Push Notification received: ", event);
-//     console.log("Push Notification ERROR: ", error);
-//   }
+    /* eslint-disable-next-line no-restricted-globals */
+    self.registration.showNotification(title, { body: message });
+  } catch (error) {
+    console.log("Push Notification received: ", event);
+    console.log("Push Notification ERROR: ", error);
+  }
 
-//   const promiseChain = Promise.all([data]);
+  const promiseChain = Promise.all([data]);
 
-//   event.waitUntil(promiseChain);
-// });
+  event.waitUntil(promiseChain);
+});
 
 // self.addEventListener("activate", function (event) {
 //   event.waitUntil(
