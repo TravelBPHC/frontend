@@ -187,8 +187,6 @@ function CreatePostPage() {
     }
   };
 
-  console.log(member);
-
   const Update = async () => {
     console.log(dayjs(leavingTime).format("HH:mm:ss"));
     await axios({
@@ -206,6 +204,8 @@ function CreatePostPage() {
     });
     navigate("/upcoming-trips");
   };
+
+  console.log(date);
 
   return (
     <GeoapifyContext apiKey={process.env.REACT_APP_MAPS_API_KEY}>
