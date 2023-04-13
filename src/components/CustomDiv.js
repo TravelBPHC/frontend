@@ -331,11 +331,11 @@ export default function CustomDiv({ type, item, email }) {
           <Card withBorder className={classes.wrapper}>
             <CardSection className={classes.Textbox}>
               <div className={classes.text}>
-                <Text c="dimmed">To: </Text>
+                <Text c="dimmed">From: </Text>
                 <Text>{item.source}</Text>
               </div>
               <div className={classes.text}>
-                <Text c="dimmed">From: </Text>
+                <Text c="dimmed">To: </Text>
                 <Text>{item.destination}</Text>
               </div>
               <div className={classes.text}>
