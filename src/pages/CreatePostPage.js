@@ -22,6 +22,7 @@ import {
   GeoapifyContext,
 } from "@geoapify/react-geocoder-autocomplete";
 import "@geoapify/geocoder-autocomplete/styles/minimal.css";
+import emailRegex from "../utils/emailRegex";
 
 const useStyles = createStyles((theme) => ({
   Title: {
@@ -116,6 +117,7 @@ function CreatePostPage() {
   const [member, setMember] = React.useState(new Set());
   const [allUsers, setAllUsers] = React.useState();
   const [error, setError] = React.useState(false);
+  const [dataFetched, setDataFetched] = React.useState(false);
   const [searchData, setSearchData] = React.useState([]);
 
   let navigate = useNavigate();
@@ -128,12 +130,15 @@ function CreatePostPage() {
         headers: { Authorization: localStorage.getItem("SavedToken") },
       });
       setOrganiser(data.data.email);
-      member.add(data.data.email);
-      setMember(member);
+
+      if (!state?.flag) {
+        member.add(data.data.email);
+        setMember(member);
+      }
     };
     User();
 
-    if (state?.flag) {
+    if (state?.flag && !dataFetched) {
       console.log(state);
       setSource(state.data.source);
       setDestination(state.data.destination);
@@ -152,7 +157,11 @@ function CreatePostPage() {
       let members = [];
       state.data.passengers.map((item, id) => members.push(item.email));
 
-      setMember(members.slice(1, members.length));
+      console.log("entering");
+      setNoOfMembers(members.length - 1);
+      setMember(new Set(members));
+
+      setDataFetched(true);
     }
 
     const AllUser = async () => {
@@ -168,6 +177,7 @@ function CreatePostPage() {
   }, [noOfMembers]);
 
   const Create = async () => {
+    console.log(date);
     if (date && leavingTime && waitingTime && source != destination) {
       setError(false);
       navigate("/choose-vendor", {
@@ -188,7 +198,8 @@ function CreatePostPage() {
   };
 
   const Update = async () => {
-    console.log(dayjs(leavingTime).format("HH:mm:ss"));
+    console.log([...member].join(","));
+
     await axios({
       method: "patch",
       url: `${process.env.REACT_APP_ROOT_URL}/api/trip/update/${state?.data.id}`,
@@ -196,16 +207,17 @@ function CreatePostPage() {
       data: {
         source: source,
         destination: destination,
-        departure_date: date,
+        departure_date: dayjs(date).format("YYYY-MM-DD"),
         departure_time: dayjs(leavingTime).format("HH:mm:ss"),
         waiting_time: waitingTime,
         details: details,
+        passengers: [...member].join(","),
       },
     });
     navigate("/upcoming-trips");
   };
 
-  console.log(date);
+  console.log(member);
 
   return (
     <GeoapifyContext apiKey={process.env.REACT_APP_MAPS_API_KEY}>
@@ -225,6 +237,9 @@ function CreatePostPage() {
           label="Source"
           onChange={(event) => setSource(event.currentTarget.value)}
           value={source}
+          disabled={
+            state?.flag && state?.data.passengers.length > 1 ? true : false
+          }
           required
           rightSection={
             <ActionIcon
@@ -238,14 +253,15 @@ function CreatePostPage() {
             </ActionIcon>
           }
         />
-        <Chip.Group className={classes.chip} onChange={setSource}>
-          <Chip value="Campus">Campus</Chip>
-          <Chip value="Airport">Airport</Chip>
-          <Chip value="F3">F3</Chip>
-          <Chip value="BnB">BnB</Chip>
-          <Chip value="Railway Station">Rlw Stn</Chip>
-        </Chip.Group>
-
+        {state?.flag && state?.data.passengers.length > 1 ? null : (
+          <Chip.Group className={classes.chip} onChange={setSource}>
+            <Chip value="Campus">Campus</Chip>
+            <Chip value="Airport">Airport</Chip>
+            <Chip value="F3">F3</Chip>
+            <Chip value="BnB">BnB</Chip>
+            <Chip value="Railway Station">Rlw Stn</Chip>
+          </Chip.Group>
+        )}
         {/* <Text fz="sm" sx={{ marginTop: 20 }}>
           Destination <span style={{ color: "red" }}>*</span>
         </Text> */}
@@ -256,6 +272,9 @@ function CreatePostPage() {
           onChange={(event) => setDestination(event.currentTarget.value)}
           value={destination}
           required
+          disabled={
+            state?.flag && state?.data.passengers.length > 1 ? true : false
+          }
           rightSection={
             <ActionIcon
               style={{
@@ -268,13 +287,15 @@ function CreatePostPage() {
             </ActionIcon>
           }
         />
-        <Chip.Group className={classes.chip} onChange={setDestination}>
-          <Chip value="Campus">Campus</Chip>
-          <Chip value="Airport">Airport</Chip>
-          <Chip value="F3">F3</Chip>
-          <Chip value="BnB">BnB</Chip>
-          <Chip value="Railway Station">Rlw Stn</Chip>
-        </Chip.Group>
+        {state?.flag && state?.data.passengers.length > 1 ? null : (
+          <Chip.Group className={classes.chip} onChange={setDestination}>
+            <Chip value="Campus">Campus</Chip>
+            <Chip value="Airport">Airport</Chip>
+            <Chip value="F3">F3</Chip>
+            <Chip value="BnB">BnB</Chip>
+            <Chip value="Railway Station">Rlw Stn</Chip>
+          </Chip.Group>
+        )}
 
         <DatePicker
           className={classes.form}
@@ -284,6 +305,9 @@ function CreatePostPage() {
           label="Date"
           required
           value={date}
+          disabled={
+            state?.flag && state?.data.passengers.length > 1 ? true : false
+          }
           inputFormat="YYYY-MM-DD"
           onChange={(value) => setDate(dayjs(value).format("YYYY-MM-DD"))}
           rightSection={<IconCalendar size={20} />}
@@ -294,6 +318,9 @@ function CreatePostPage() {
           onChange={setLeavingTime}
           label="Leaving time"
           format="24"
+          disabled={
+            state?.flag && state?.data.passengers.length > 1 ? true : false
+          }
           icon={<IconClock size={16} />}
           required
         />
@@ -320,18 +347,31 @@ function CreatePostPage() {
           <>
             <NumberInput
               defaultValue={noOfMembers + 1}
-              min={1}
+              min={state?.flag ? state?.data.passengers.length : 1}
               placeholder="Members"
               onChange={(value) => {
-                if (value - 1 < noOfMembers && value == member.size - 1)
+                // console.log("value", value, noOfMembers, member.size - 1);
+                // console.log("members", member);
+                if (value - 1 <= noOfMembers && value == member.size - 1) {
                   member.delete([...member][member.size - 1]);
+                }
                 setNoOfMembers(value - 1);
+                // console.log("done");
+                // console.log("value", value, noOfMembers, member.size - 1);
+                // console.log("members", member);
               }}
               className={classes.form}
               label="Choose members"
             />
             <TextInput className={classes.form} value={organiser} disabled />
-            {[...Array(noOfMembers).keys()].map(() => (
+            {state?.flag
+              ? Array.from(member)
+                  .slice(1, state?.data.passengers.length)
+                  .map((item) => (
+                    <TextInput className={classes.form} value={item} disabled />
+                  ))
+              : null}
+            {[...Array(noOfMembers - member.size + 1).keys()].map((index) => (
               <AutocompleteText
                 placeholder="Type mail or name"
                 className={classes.form}

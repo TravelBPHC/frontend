@@ -841,7 +841,10 @@ export default function CustomDiv({ type, item, email }) {
                   })
                 }
               >
-                <IconEdit color="skyblue" style={{ marginLeft: 10 }} />
+                <IconEdit
+                  color={email === item.creator.email ? "skyblue" : "grey"}
+                  style={{ marginLeft: 10 }}
+                />
               </ActionIcon>
               <ActionIcon
                 variant="transparent"
@@ -854,7 +857,10 @@ export default function CustomDiv({ type, item, email }) {
                 size={30}
                 onClick={() => Delete(item.id)}
               >
-                <IconTrash color="red" style={{ marginLeft: 10 }} />
+                <IconTrash
+                  color={email === item.creator.email ? "red" : "grey"}
+                  style={{ marginLeft: 10 }}
+                />
               </ActionIcon>
             </div>
           </CardSection>
