@@ -343,8 +343,8 @@ export default function CustomDiv({ type, item, email }) {
                 <Text>{dayjs(item.departure_date).format("MMMM D, YYYY")}</Text>
               </div>
               <div className={classes.text}>
-                <Text c="dimmed">Space Available: </Text>
-                <Text>{item.vacancies}</Text>
+                <Text c="dimmed">Time: </Text>
+                <Text>{item.departure_time.slice(0, 5)}</Text>
               </div>
               <div className={classes.text}>
                 <Text c="dimmed">Waiting time: </Text>
