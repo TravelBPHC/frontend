@@ -333,19 +333,34 @@ export default function CustomDiv({ type, item, email }) {
                 <Text>{dayjs(item.departure_date).format("MMMM D, YYYY")}</Text>
               </div>
               <div className={classes.text}>
-                <Text c="dimmed">Space Available: </Text>
-                <Text>{item.seats - item.passengers.length}</Text>
+                <Text c="dimmed">Time: </Text>
+                <Text>{item.departure_time.slice(0, 5)}</Text>
               </div>
               <div className={classes.text}>
                 <Text c="dimmed">Waiting time: </Text>
                 <Text>{item.waiting_time}</Text>
               </div>
-              <Collapse in={showDetails}>
-                <div className={classes.text}>
-                  <Text c="dimmed">Details: </Text>
-                  <Text>{item.details}</Text>
-                </div>
-              </Collapse>
+
+              <div className={classes.text}>
+                <Text c="dimmed">Creator: </Text>
+                {/* <Flex direction={"column"}> */}
+                <Text>{item.creator.name}</Text>
+                <Text c="dimmed">({item.creator.email})</Text>
+                {/* </Flex> */}
+              </div>
+
+              <div className={classes.text}>
+                <Text c="dimmed">Space Available: </Text>
+                <Text>{item.vacancies}</Text>
+              </div>
+              {item?.details ? (
+                <Collapse in={showDetails}>
+                  <div className={classes.text}>
+                    <Text c="dimmed">Details: </Text>
+                    <Text>{item.details}</Text>
+                  </div>
+                </Collapse>
+              ) : null}
             </CardSection>
             <CardSection>
               <Button.Group
@@ -354,6 +369,7 @@ export default function CustomDiv({ type, item, email }) {
               >
                 <Button
                   classNames={{ root: classes.button, label: classes.label }}
+                  disabled={!item?.details}
                   onClick={() => setShowDetails(!showDetails)}
                 >
                   {showDetails ? "Hide Details" : "Show Details"}
