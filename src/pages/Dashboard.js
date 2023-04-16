@@ -22,6 +22,8 @@ import axios from "axios";
 import CustomDiv from "../components/CustomDiv";
 import { useMediaQuery } from "@mantine/hooks";
 import { UserContext } from "../utils/Context";
+import useError from "../hooks/useError";
+import Error from "../components/Error";
 
 const useStyles = createStyles((theme) => ({
   Title: {
@@ -165,25 +167,32 @@ function Dashboard() {
   const [opened, setOpened] = React.useState(false);
   const [pageLoading, setPageLoading] = React.useState(true);
   const [accountToggle, setAccountToggle] = React.useState(false);
+  const [errorMessage, setErrorMessage, errorOpen, setErrorOpen] = useError();
 
   const Phone = async () => {
-    if (/^[1-9][0-9]{9}$/.test(phone)) {
-      setError(false);
-      await axios({
-        method: "patch",
-        url: `${process.env.REACT_APP_ROOT_URL}/user/phone`,
-        headers: { Authorization: localStorage.getItem("SavedToken") },
-        data: {
-          phone: phone,
-        },
-      });
+    try {
+      if (/^[1-9][0-9]{9}$/.test(phone)) {
+        setError(false);
+        await axios({
+          method: "patch",
+          url: `${process.env.REACT_APP_ROOT_URL}/user/phone`,
+          headers: { Authorization: localStorage.getItem("SavedToken") },
+          data: {
+            phone: phone,
+          },
+        });
 
-      setOpened(true);
-      setTimeout(() => {
-        setOpened(false);
-      }, 3000);
-    } else {
-      setError(true);
+        setOpened(true);
+        setTimeout(() => {
+          setOpened(false);
+        }, 3000);
+      } else {
+        setError(true);
+      }
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
     }
   };
 
@@ -219,7 +228,7 @@ function Dashboard() {
               c="dimmed"
               onClick={() => setAccountToggle(!accountToggle)}
             >
-              Accoussssnt info{" "}
+              Account info{" "}
               {!accountToggle ? (
                 <IconChevronDown size={14} />
               ) : (
@@ -295,8 +304,16 @@ function Dashboard() {
           <div style={{ display: "inline-block" }}>
             <Text className={classes.pageTitle}>TRIPS</Text>
           </div>
-          <CustomDiv type={3} />
-          <CustomDiv type={8} />
+          <CustomDiv
+            type={3}
+            setErrorMessage={setErrorMessage}
+            setErrorOpen={setErrorOpen}
+          />
+          <CustomDiv
+            type={8}
+            setErrorMessage={setErrorMessage}
+            setErrorOpen={setErrorOpen}
+          />
         </Grid.Col>
         <Grid.Col
           sm={8}
@@ -307,10 +324,24 @@ function Dashboard() {
           <div style={{ display: "inline-block" }}>
             <Text className={classes.pageTitle}>POSTS</Text>
           </div>
-          <CustomDiv type={2} />
-          <CustomDiv type={9} />
+          <CustomDiv
+            type={2}
+            setErrorMessage={setErrorMessage}
+            setErrorOpen={setErrorOpen}
+          />
+          <CustomDiv
+            type={9}
+            setErrorMessage={setErrorMessage}
+            setErrorOpen={setErrorOpen}
+          />
         </Grid.Col>
       </Grid>
+      <Error
+        errorOpen={errorOpen}
+        setErrorOpen={setErrorOpen}
+        isUser={true}
+        error={errorMessage}
+      />
     </>
   ) : (
     <Center style={{ width: "100%", height: window.innerHeight - 68 }}>

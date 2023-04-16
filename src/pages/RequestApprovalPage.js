@@ -9,6 +9,8 @@ import {
 import axios from "axios";
 import React from "react";
 import { useParams } from "react-router";
+import useError from "../hooks/useError";
+import Error from "../components/Error";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -84,30 +86,45 @@ function RequestApprovalPage() {
   const [loaderAccept, setLoaderAccept] = React.useState(false);
   const [loaderReject, setLoaderReject] = React.useState(false);
   const [disabled, setDisabled] = React.useState(false);
+  const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
 
   const Accept = async () => {
-    setLoaderAccept(true);
-    const data = await axios({
-      method: "get",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/request/mailaccept?${queryString}`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-    });
-    if (data.data) {
+    try {
+      setLoaderAccept(true);
+      const data = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/request/mailaccept?${queryString}`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+      });
+      if (data.data) {
+        setLoaderAccept(false);
+        setDisabled(true);
+      }
+    } catch (error) {
       setLoaderAccept(false);
-      setDisabled(true);
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
     }
   };
 
   const Decline = async () => {
-    setLoaderReject(true);
-    const data = await axios({
-      method: "get",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/request/mailreject?${queryString}`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-    });
-    if (data.data) {
+    try {
+      setLoaderReject(true);
+      const data = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/request/mailreject?${queryString}`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+      });
+      if (data.data) {
+        setLoaderReject(false);
+        setDisabled(true);
+      }
+    } catch (error) {
       setLoaderReject(false);
-      setDisabled(true);
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
     }
   };
 
@@ -147,6 +164,12 @@ function RequestApprovalPage() {
           </Button>
         </Button.Group>
       </Paper>
+      <Error
+        errorOpen={errorOpen}
+        setErrorOpen={setErrorOpen}
+        isUser={false}
+        error={errorMessage}
+      />
     </>
   );
 }

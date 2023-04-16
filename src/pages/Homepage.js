@@ -21,6 +21,8 @@ import { useNavigate } from "react-router-dom";
 import CustomDiv from "../components/CustomDiv";
 import { ReactComponent as BlankSVG } from "../assets/undraw_nothing.svg";
 import { UserContext } from "../utils/Context";
+import useError from "../hooks/useError";
+import Error from "../components/Error";
 
 const useStyles = createStyles((theme) => ({
   pageTitle: {
@@ -150,25 +152,33 @@ function Homepage() {
   const [opened, setOpened] = React.useState(false);
   const [pageLoading, setPageLoading] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
+  const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
 
   if (pageLoading && posts && userDetail) {
     setPageLoading(false);
   }
 
   const Filter = async () => {
-    setLoading(true);
-    setOpened(false);
-    const data = await axios({
-      method: "get",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/trip/all-active?${
-        dest.length > 0 ? "dest=" + dest + "&" : ""
-      }${src.length > 0 ? "src=" + src + "&" : ""}${
-        dt.length > 0 ? "dt=" + dt : ""
-      }`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-    });
-    setPosts(data.data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      setOpened(false);
+      const data = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/trip/all-active?${
+          dest.length > 0 ? "dest=" + dest + "&" : ""
+        }${src.length > 0 ? "src=" + src + "&" : ""}${
+          dt.length > 0 ? "dt=" + dt : ""
+        }`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+      });
+      setPosts(data.data);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
   };
 
   return !pageLoading ? (
@@ -386,6 +396,12 @@ function Homepage() {
           </Button>
         </div>
       </Modal>
+      <Error
+        errorOpen={errorOpen}
+        setErrorOpen={setErrorOpen}
+        isUser={false}
+        error={errorMessage}
+      />
     </>
   ) : (
     <Center style={{ width: "100%", height: window.innerHeight - 68 }}>

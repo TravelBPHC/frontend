@@ -20,6 +20,8 @@ import Map from "../components/Map";
 import { IconLeaf } from "@tabler/icons";
 import Bus from "../utils/Bus";
 import { Carousel } from "@mantine/carousel";
+import Error from "../components/Error";
+import useError from "../hooks/useError";
 
 const useStyles = createStyles((theme) => ({
   pageTitle: {
@@ -188,38 +190,45 @@ function ChooseVendorPage() {
   const [seats, setSeats] = React.useState(null);
   const [phone, setPhone] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
   let navigate = useNavigate();
   const { state } = useLocation();
 
   console.log(state);
 
-  const Trip = async () => {
-    setLoading(true);
-    await axios({
-      method: "post",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/trip/create`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-      data: {
-        source: state.source,
-        destination: state.destination,
-        departure_date: state.departure_date,
-        departure_time: state.departure_time,
-        waiting_time: state.waiting_time,
-        details: state.details,
-        passengers: state.passengers,
-        vendor: "Cabs",
-        car_name: vehicle,
-        seats: seats,
-        vendor_phone: phone,
-      },
-    });
-    getUpcomingTrips();
-    setOpened(true);
-    setLoading(false);
+  const createTrip = async () => {
+    try {
+      setLoading(true);
+      await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/trip/create`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+        data: {
+          source: state.source,
+          destination: state.destination,
+          departure_date: state.departure_date,
+          departure_time: state.departure_time,
+          waiting_time: state.waiting_time,
+          details: state.details,
+          passengers: state.passengers,
+          vendor: "Cabs",
+          car_name: vehicle,
+          seats: seats,
+          vendor_phone: phone,
+        },
+      });
+      getUpcomingTrips();
+      setOpened(true);
+      setLoading(false);
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
   };
 
-  const getUpcomingTrips = React.useCallback(
-    async (response) => {
+  const getUpcomingTrips = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/trip/upcoming`,
         {
@@ -227,9 +236,12 @@ function ChooseVendorPage() {
         }
       );
       setUpcomingTrips(data.data);
-    },
-    [upcomingTrips]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [upcomingTrips]);
 
   const [opened, setOpened] = React.useState(false);
 
@@ -238,13 +250,6 @@ function ChooseVendorPage() {
       <Grid columns={12} gutter={"xl"}>
         <Grid.Col lg={8} className={classes.wrapper}>
           <Text className={classes.pageTitle}>Available Vendors</Text>
-          {/* <Button
-            sx={{ marginTop: 10, backgroundColor: "green" }}
-            onClick={() => setBusModal((busModal) => !busModal)}
-          >
-            <IconLeaf /> Bus Schedule
-          </Button>
-          <Bus opened={busModal} setOpened={setBusModal} /> */}
           <Text className={classes.pageSubtitle}>Cabs</Text>
           <div className={classes.vendorGroup}>
             <Accordion variant="contained">
@@ -352,7 +357,7 @@ function ChooseVendorPage() {
             <Button
               disabled={vehicle ? false : true}
               className={classes.confirmButton}
-              onClick={() => Trip()}
+              onClick={() => createTrip()}
               loading={loading}
             >
               {loading ? null : "Confirm Trip"}
@@ -405,6 +410,12 @@ function ChooseVendorPage() {
           Got it!
         </Button>
       </Modal>
+      <Error
+        errorOpen={errorOpen}
+        setErrorOpen={setErrorOpen}
+        isUser={false}
+        error={errorMessage}
+      />
     </>
   );
 }
