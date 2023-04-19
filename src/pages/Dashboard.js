@@ -269,7 +269,7 @@ function Dashboard() {
                 variant="gradient"
                 gradient={{ from: "blue.5", to: "pink.7", deg: 0 }}
               >
-                Hi, he {userDetail?.name}!
+                Hi, {userDetail?.name}!
               </Text>
             </div>
             <Text
