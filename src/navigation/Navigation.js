@@ -1,4 +1,3 @@
-import { Affix, Button } from "@mantine/core";
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Container from "../components/Container";
@@ -22,6 +21,8 @@ import axios from "axios";
 import CO2 from "../pages/CO2";
 // import { checkEvent } from "../utils/CalendarApi";
 import { websockets } from "../utils/websocket";
+import useError from "../hooks/useError";
+import Error from "../components/Error";
 
 var webSocket_request_created = new WebSocket(
   `${process.env.REACT_APP_WEBSOCKET_URL}/request-created/`
@@ -46,6 +47,7 @@ function Navigation() {
   const [pastTrips, setPastTrips] = React.useState(null);
   const [sentRequests, setSentRequests] = React.useState(null);
   const [recievedRequests, setRecievedRequests] = React.useState(null);
+  const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
 
   React.useEffect(() => {
     if (loggedIn) {
@@ -58,18 +60,21 @@ function Navigation() {
     }
   }, [loggedIn]);
 
-  const getUserData = React.useCallback(
-    async (response) => {
+  const getUserData = React.useCallback(async () => {
+    try {
       const data = await axios.get(`${process.env.REACT_APP_ROOT_URL}/user/`, {
         headers: { Authorization: localStorage.getItem("SavedToken") },
       });
       setUserDetail(data.data);
-    },
-    [userDetail]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [userDetail]);
 
-  const getupcomingTrips = React.useCallback(
-    async (response) => {
+  const getupcomingTrips = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/trip/upcoming`,
         {
@@ -87,20 +92,17 @@ function Navigation() {
             },
           });
         }
-        // else {
-        //   const result = await checkEvent(
-        //     item.creator.email.slice(0, 9) + item.id
-        //   );
-        //   item.addedInCalendar = result;
-        // }
       });
       setUpcomingTrips(data?.data);
-    },
-    [upcomingTrips]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [upcomingTrips]);
 
-  const getPastTrips = React.useCallback(
-    async (response) => {
+  const getPastTrips = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/trip/past`,
         {
@@ -108,12 +110,15 @@ function Navigation() {
         }
       );
       setPastTrips(data.data);
-    },
-    [pastTrips]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [pastTrips]);
 
-  const getSentRequests = React.useCallback(
-    async (response) => {
+  const getSentRequests = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/request/all-sent`,
         {
@@ -121,25 +126,34 @@ function Navigation() {
         }
       );
       setSentRequests(data.data);
-    },
-    [sentRequests]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [sentRequests]);
 
   const getRecievedRequests = React.useCallback(
     async (response) => {
-      const data = await axios.get(
-        `${process.env.REACT_APP_ROOT_URL}/api/request/all-received`,
-        {
-          headers: { Authorization: localStorage.getItem("SavedToken") },
-        }
-      );
-      setRecievedRequests(data.data);
+      try {
+        const data = await axios.get(
+          `${process.env.REACT_APP_ROOT_URL}/api/request/all-received`,
+          {
+            headers: { Authorization: localStorage.getItem("SavedToken") },
+          }
+        );
+        setRecievedRequests(data.data);
+      } catch (error) {
+        if (typeof error === "object") setErrorMessage(error.message);
+        else setErrorMessage(error);
+        setErrorOpen(true);
+      }
     },
     [recievedRequests]
   );
 
-  const getAllPosts = React.useCallback(
-    async (response) => {
+  const getAllPosts = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/trip/all-active`,
         {
@@ -159,9 +173,12 @@ function Navigation() {
           });
         }
       });
-    },
-    [posts]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [posts]);
 
   const contextValue = React.useMemo(
     () => ({
@@ -216,7 +233,12 @@ function Navigation() {
       <BrowserRouter>
         <UserContext.Provider value={contextValue}>
           <Navbar loggedIn={loggedIn} setLoggedIn={setLoggedIn} />
-
+          <Error
+            errorOpen={errorOpen}
+            setErrorOpen={setErrorOpen}
+            isUser={false}
+            error={errorMessage}
+          />
           {loggedIn ? (
             <Container>
               <Routes>

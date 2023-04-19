@@ -14,7 +14,9 @@ import BG from "../assets/bg.jpg";
 import { useGoogleLogin } from "@react-oauth/google";
 import { IconBrandGoogle } from "@tabler/icons";
 import { sendSubscriptionToBackEnd } from "../utils/subscription";
-import { register } from "../serviceWorkerRegistration";
+import useError from "../hooks/useError";
+import Error from "../components/Error";
+import axios from "axios";
 
 const useStyles = createStyles((theme) => ({
   Textbox: {
@@ -95,17 +97,23 @@ const useStyles = createStyles((theme) => ({
 
 function LandingPage({ loggedIn, setLoggedIn }) {
   const { classes } = useStyles();
+  const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
 
   const googlelogin = useGoogleLogin({
     flow: "auth-code",
-    onSuccess: (TokenResponse) => {
+    onSuccess: async (TokenResponse) => {
       console.log(TokenResponse);
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", `${process.env.REACT_APP_ROOT_URL}/user/auth`);
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-      xhr.send("code=" + TokenResponse.code);
-      xhr.onload = function () {
-        let data = JSON.parse(xhr.responseText);
+      try {
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_ROOT_URL}/user/auth`,
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          data: {
+            code: TokenResponse.code,
+          },
+        });
+        console.log(result.data);
+        let data = result.data;
         console.log("Signed in as: ", data);
         localStorage.setItem("SavedToken", "Bearer " + data.token);
         localStorage.setItem("accessToken", "Bearer " + data.g_access_token);
@@ -115,11 +123,17 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           Date.now() + (data.expires_in - 30) * 1000
         );
 
-        register();
-
         setLoggedIn(true);
-      };
+      } catch (error) {
+        setErrorMessage(error.message);
+        setErrorOpen(true);
+      }
     },
+    onError: (error) => {
+      setErrorMessage(error);
+      setErrorOpen(true);
+    },
+
     // scope: ["https://www.googleapis.com/auth/calendar"],
   });
 
@@ -141,6 +155,12 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           </Button>
         </Button.Group>
       </div>
+      <Error
+        errorOpen={errorOpen}
+        setErrorOpen={setErrorOpen}
+        isUser={false}
+        error={errorMessage}
+      />
     </>
   );
 }

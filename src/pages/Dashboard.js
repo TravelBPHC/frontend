@@ -10,6 +10,8 @@ import {
   Loader,
   Center,
   Collapse,
+  Flex,
+  Switch,
 } from "@mantine/core";
 import React from "react";
 import {
@@ -22,6 +24,9 @@ import axios from "axios";
 import CustomDiv from "../components/CustomDiv";
 import { useMediaQuery } from "@mantine/hooks";
 import { UserContext } from "../utils/Context";
+import useError from "../hooks/useError";
+import Error from "../components/Error";
+import { register, askPermission } from "../serviceWorkerRegistration";
 
 const useStyles = createStyles((theme) => ({
   Title: {
@@ -129,15 +134,18 @@ const useStyles = createStyles((theme) => ({
     height: 216,
     width: 216,
     borderRadius: 999,
+    marginLeft: "auto",
+    marginRight: "auto",
   },
 
   button: {
-    width: "50%",
-    marginLeft: "50%",
-    transform: "translateX(-50%)",
-    height: 70,
+    // width: "20%",
+    marginLeft: 20,
+    // transform: "translateX(-50%)",
+    // marginTop: 20,
+    height: 40,
     borderRadius: 20,
-    marginTop: 30,
+    marginTop: 40,
     opacity: 0.8,
     transitionDuration: "0.3s",
 
@@ -157,6 +165,20 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
+const updateServiceWorker = (workerRegistration) => {
+  const registrationWaiting = workerRegistration.waiting;
+
+  if (registrationWaiting) {
+    registrationWaiting.postMessage({ type: "SKIP_WAITING" });
+
+    registrationWaiting.addEventListener("statechange", (e) => {
+      if (e.target.state === "activated") {
+        window.location.reload();
+      }
+    });
+  }
+};
+
 function Dashboard() {
   const { userDetail, upcomingTrips } = React.useContext(UserContext);
   const { classes } = useStyles();
@@ -165,30 +187,66 @@ function Dashboard() {
   const [opened, setOpened] = React.useState(false);
   const [pageLoading, setPageLoading] = React.useState(true);
   const [accountToggle, setAccountToggle] = React.useState(false);
+  const [errorMessage, setErrorMessage, errorOpen, setErrorOpen] = useError();
+
+  const subscribeNotifs = async () => {
+    if (Notification.permission !== "granted") await askPermission();
+
+    register({
+      onUpdate: (registration) => {
+        updateServiceWorker(registration);
+      },
+    });
+  };
+
+  const unsubscribeNotifs = async () => {
+    try {
+      await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_ROOT_URL}/user/unsubscribe`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+      });
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  };
 
   const Phone = async () => {
-    if (/^[1-9][0-9]{9}$/.test(phone)) {
-      setError(false);
-      await axios({
-        method: "patch",
-        url: `${process.env.REACT_APP_ROOT_URL}/user/phone`,
-        headers: { Authorization: localStorage.getItem("SavedToken") },
-        data: {
-          phone: phone,
-        },
-      });
+    try {
+      if (/^[1-9][0-9]{9}$/.test(phone)) {
+        setError(false);
+        await axios({
+          method: "patch",
+          url: `${process.env.REACT_APP_ROOT_URL}/user/phone`,
+          headers: { Authorization: localStorage.getItem("SavedToken") },
+          data: {
+            phone: phone,
+          },
+        });
 
-      setOpened(true);
-      setTimeout(() => {
-        setOpened(false);
-      }, 3000);
-    } else {
-      setError(true);
+        setOpened(true);
+        setTimeout(() => {
+          setOpened(false);
+        }, 3000);
+      } else {
+        setError(true);
+      }
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
     }
   };
 
   const pageLoaded = React.useCallback(
     (response) => {
+      register({
+        onUpdate: (registration) => {
+          updateServiceWorker(registration);
+        },
+      });
       setPageLoading(false);
     },
     [pageLoading, upcomingTrips, userDetail]
@@ -211,7 +269,7 @@ function Dashboard() {
                 variant="gradient"
                 gradient={{ from: "blue.5", to: "pink.7", deg: 0 }}
               >
-                Hi, {userDetail?.name}!
+                Hi, he {userDetail?.name}!
               </Text>
             </div>
             <Text
@@ -219,7 +277,7 @@ function Dashboard() {
               c="dimmed"
               onClick={() => setAccountToggle(!accountToggle)}
             >
-              Accoussssnt info{" "}
+              Account info{" "}
               {!accountToggle ? (
                 <IconChevronDown size={14} />
               ) : (
@@ -248,27 +306,38 @@ function Dashboard() {
                 readOnly
                 rightSection={<IconLock size={20} />}
               />
+              <Flex direction={"row"} justify={"center"} align={"center"}>
+                <TextInput
+                  label="Phone Number"
+                  className={classes.form}
+                  value={phone || userDetail?.phone}
+                  onChange={(event) => setPhone(event.currentTarget.value)}
+                  required
+                  error={error ? "Invalid Phone" : null}
+                  rightSection={<IconEdit size={20} />}
+                />
 
-              <TextInput
-                label="Phone Number"
-                className={classes.form}
-                value={phone || userDetail?.phone}
-                onChange={(event) => setPhone(event.currentTarget.value)}
-                required
-                error={error ? "Invalid Phone" : null}
-                rightSection={<IconEdit size={20} />}
+                <Button
+                  color={"customDark.0"}
+                  variant="outline"
+                  className={classes.button}
+                  onClick={() => Phone()}
+                  disabled={userDetail?.phone != phone ? false : true}
+                  type="submit"
+                >
+                  Update
+                </Button>
+              </Flex>
+              <Switch
+                label="Notifications"
+                defaultChecked={userDetail.get_notifs}
+                onChange={(event) =>
+                  event.currentTarget.checked === true
+                    ? subscribeNotifs()
+                    : unsubscribeNotifs()
+                }
               />
 
-              <Button
-                color={"customDark.0"}
-                variant="outline"
-                className={classes.button}
-                onClick={() => Phone()}
-                disabled={userDetail?.phone != phone ? false : true}
-                type="submit"
-              >
-                Update
-              </Button>
               <Dialog
                 withCloseButton={false}
                 opened={opened}
@@ -295,8 +364,16 @@ function Dashboard() {
           <div style={{ display: "inline-block" }}>
             <Text className={classes.pageTitle}>TRIPS</Text>
           </div>
-          <CustomDiv type={3} />
-          <CustomDiv type={8} />
+          <CustomDiv
+            type={3}
+            setErrorMessage={setErrorMessage}
+            setErrorOpen={setErrorOpen}
+          />
+          <CustomDiv
+            type={8}
+            setErrorMessage={setErrorMessage}
+            setErrorOpen={setErrorOpen}
+          />
         </Grid.Col>
         <Grid.Col
           sm={8}
@@ -307,10 +384,24 @@ function Dashboard() {
           <div style={{ display: "inline-block" }}>
             <Text className={classes.pageTitle}>POSTS</Text>
           </div>
-          <CustomDiv type={2} />
-          <CustomDiv type={9} />
+          <CustomDiv
+            type={2}
+            setErrorMessage={setErrorMessage}
+            setErrorOpen={setErrorOpen}
+          />
+          <CustomDiv
+            type={9}
+            setErrorMessage={setErrorMessage}
+            setErrorOpen={setErrorOpen}
+          />
         </Grid.Col>
       </Grid>
+      <Error
+        errorOpen={errorOpen}
+        setErrorOpen={setErrorOpen}
+        isUser={true}
+        error={errorMessage}
+      />
     </>
   ) : (
     <Center style={{ width: "100%", height: window.innerHeight - 68 }}>

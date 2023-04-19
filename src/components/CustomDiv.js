@@ -201,7 +201,13 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-export default function CustomDiv({ type, item, email }) {
+export default function CustomDiv({
+  type,
+  item,
+  email,
+  setErrorMessage,
+  setErrorOpen,
+}) {
   const {
     userDetail,
     upcomingTrips,
@@ -224,74 +230,99 @@ export default function CustomDiv({ type, item, email }) {
   const [disabled, setDisabled] = React.useState(false);
 
   const Accept = async (item) => {
-    setLoaderAccept(true);
-    let trip_id = item?.post_link?.split("/");
-    trip_id = trip_id[trip_id?.length - 1];
-    const data = await axios({
-      method: "get",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/request/accept?id=${item?.sender?.email}&pid=${trip_id}&rid=${item?.id}&plink=${item?.post_link}`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-    });
-    if (data.data) {
-      getRecievedRequests();
+    try {
+      setLoaderAccept(true);
+      let trip_id = item?.post_link?.split("/");
+      trip_id = trip_id[trip_id?.length - 1];
+      const data = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/request/accept?id=${item?.sender?.email}&pid=${trip_id}&rid=${item?.id}&plink=${item?.post_link}`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+      });
+      if (data.data) {
+        getRecievedRequests();
+        setLoaderAccept(false);
+        setDisabled(true);
+      }
+    } catch (error) {
       setLoaderAccept(false);
-      setDisabled(true);
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
     }
   };
 
   const Decline = async (item) => {
-    setLoaderReject(true);
-    let trip_id = item?.post_link?.split("/");
-    trip_id = trip_id[trip_id?.length - 1];
-    const data = await axios({
-      method: "get",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/request/reject?id=${item?.sender?.email}&pid=${trip_id}&rid=${item?.id}&plink=${item?.post_link}`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-    });
-    if (data.data) {
-      getRecievedRequests();
-      setLoaderReject(false);
-      setDisabled(true);
+    try {
+      setLoaderReject(true);
+      let trip_id = item?.post_link?.split("/");
+      trip_id = trip_id[trip_id?.length - 1];
+      const data = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/request/reject?id=${item?.sender?.email}&pid=${trip_id}&rid=${item?.id}&plink=${item?.post_link}`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+      });
+      if (data.data) {
+        getRecievedRequests();
+        setLoaderReject(false);
+        setDisabled(true);
+      }
+    } catch (error) {
+      setLoaderAccept(false);
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
     }
   };
 
   const Delete = async (id) => {
-    console.log("deleting ", id);
-    const data = await axios({
-      method: "delete",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/trip/delete/${id}`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-    });
-    console.log(data.data);
-    window.location.reload();
-  };
-
-  const SendRequest = async (item) => {
-    setLoading1(true);
-    const data = await axios({
-      method: "post",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/request/new`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-      data: {
-        trip_link: `${process.env.REACT_APP_ROOT_URL}/post-details/${item.id}`,
-        trip_id: item.id,
-        requestor: userDetail?.email,
-        creator: item.creator?.email,
-      },
-    });
-    if (data.data) {
-      getSentRequests();
-      setLoading1(false);
-      setDisabled1(true);
-      setOpened1(true);
-      setTimeout(() => {
-        setOpened1(false);
-      }, 3000);
+    try {
+      await axios({
+        method: "delete",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/trip/delete/${id}`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+      });
+      window.location.reload();
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
     }
   };
 
-  const getSentRequests = React.useCallback(
-    async (response) => {
+  const SendRequest = async (item) => {
+    try {
+      setLoading1(true);
+      const data = await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/request/new`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+        data: {
+          trip_link: `${process.env.REACT_APP_ROOT_URL}/post-details/${item.id}`,
+          trip_id: item.id,
+          requestor: userDetail?.email,
+          creator: item.creator?.email,
+        },
+      });
+      if (data.data) {
+        getSentRequests();
+        setLoading1(false);
+        setDisabled1(true);
+        setOpened1(true);
+        setTimeout(() => {
+          setOpened1(false);
+        }, 3000);
+      }
+    } catch (error) {
+      setLoading1(false);
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  };
+
+  const getSentRequests = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/request/all-sent`,
         {
@@ -299,12 +330,15 @@ export default function CustomDiv({ type, item, email }) {
         }
       );
       setSentRequests(data.data);
-    },
-    [sentRequests]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [sentRequests]);
 
-  const getRecievedRequests = React.useCallback(
-    async (response) => {
+  const getRecievedRequests = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/request/all-received`,
         {
@@ -312,9 +346,12 @@ export default function CustomDiv({ type, item, email }) {
         }
       );
       setRecievedRequests(data.data);
-    },
-    [recievedRequests]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [recievedRequests]);
 
   React.useEffect(() => {}, [disabled]);
 
@@ -402,12 +439,9 @@ export default function CustomDiv({ type, item, email }) {
                   onClick={() => SendRequest(item)}
                   loading={loading1}
                   disabled={
-                    disabled1
+                    match?.status === "Accepted" ||
+                    match?.status === "Unconfirmed"
                       ? true
-                      : match
-                      ? match?.status === "Rejected"
-                        ? false
-                        : true
                       : false
                   }
                 >
@@ -462,6 +496,7 @@ export default function CustomDiv({ type, item, email }) {
                     transitionDuration: "3s",
                     display: disabled
                       ? setTimeout(() => {
+                          setDisabled(false);
                           return "none";
                         }, 2000)
                       : "flex",
@@ -506,7 +541,7 @@ export default function CustomDiv({ type, item, email }) {
                         },
                       })}
                       loading={loaderAccept}
-                      disabled={disabled}
+                      // disabled={disabled}
                       onClick={() => Accept(item)}
                     >
                       Accept
@@ -520,7 +555,7 @@ export default function CustomDiv({ type, item, email }) {
                       classNames={{ root: classes.roundedButton }}
                       onClick={() => Decline(item)}
                       loading={loaderReject}
-                      disabled={disabled}
+                      // disabled={disabled}
                     >
                       <IconX size={22} />
                     </ActionIcon>
@@ -748,7 +783,6 @@ export default function CustomDiv({ type, item, email }) {
                 classNames={{ root: classes.button, label: classes.label }}
                 style={{ color: "#00FF47" }}
                 loading={loaderAccept}
-                disabled={disabled}
                 onClick={() => Accept(item)}
               >
                 Accept
@@ -759,7 +793,6 @@ export default function CustomDiv({ type, item, email }) {
                 style={{ borderLeftStyle: "solid", color: "red" }}
                 onClick={() => Decline(item)}
                 loading={loaderReject}
-                disabled={disabled}
               >
                 Decline
               </Button>

@@ -12,6 +12,8 @@ import dayjs from "dayjs";
 import React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import CustomDiv from "../components/CustomDiv";
+import useError from "../hooks/useError";
+import Error from "../components/Error";
 
 const useStyles = createStyles((theme) => ({
   pageTitle: {
@@ -99,13 +101,14 @@ function TripDetail() {
   let navigate = useNavigate();
   const [post, setPost] = React.useState(null);
   const { id } = useParams();
+  const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
 
   React.useEffect(() => {
     getPost();
   }, []);
 
-  const getPost = React.useCallback(
-    async (response) => {
+  const getPost = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/trip/${id}`,
         {
@@ -113,9 +116,12 @@ function TripDetail() {
         }
       );
       setPost(data.data);
-    },
-    [post]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [post]);
 
   if (post) {
     navigate("/create-post", {
@@ -125,7 +131,14 @@ function TripDetail() {
       },
     });
   }
-  return;
+  return (
+    <Error
+      errorOpen={errorOpen}
+      setErrorOpen={setErrorOpen}
+      isUser={false}
+      error={errorMessage}
+    />
+  );
 }
 
 export default TripDetail;

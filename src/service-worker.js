@@ -19,10 +19,8 @@ const VERSION = require("../package.json").version;
 
 /* eslint-disable-next-line no-restricted-globals */
 self.addEventListener("push", async function async(event) {
-  console.log("Push Notification received", event);
   const data = await event?.data.json();
   try {
-    console.log("Push Notification DATA: ", data);
     let message = "";
     let title = "";
     if (data?.type === "request accepted") {
@@ -30,7 +28,7 @@ self.addEventListener("push", async function async(event) {
       message =
         "Your request for the trip to " +
         data?.destination +
-        "on " +
+        " on " +
         // change date to departure_date everywhere
         data?.departure_date +
         " has been accepted by " +
@@ -41,7 +39,7 @@ self.addEventListener("push", async function async(event) {
       message =
         "Your request for the trip to " +
         data?.destination +
-        "on " +
+        " on " +
         data?.departure_date +
         " has been rejected by " +
         data?.sender;
@@ -60,7 +58,18 @@ self.addEventListener("push", async function async(event) {
     }
 
     /* eslint-disable-next-line no-restricted-globals */
-    self.registration.showNotification(title, { body: message });
+    self.registration.showNotification(title, {
+      body: message,
+      icon: "/assets/logo192.png",
+      badge: "assets/logo192.png",
+      actions: [
+        {
+          action: "open-page-action",
+          title: "Open Page",
+          type: "button",
+        },
+      ],
+    });
   } catch (error) {
     console.log("Push Notification received: ", event);
     console.log("Push Notification ERROR: ", error);
@@ -71,25 +80,40 @@ self.addEventListener("push", async function async(event) {
   event.waitUntil(promiseChain);
 });
 
-// self.addEventListener("activate", function (event) {
-//   event.waitUntil(
-//     caches.keys().then(function (cacheNames) {
-//       return Promise.all(
-//         cacheNames
-//           .filter(function (cacheName) {
-//             if (cache.includes(cacheName)) {
-//               return true;
-//             }
-//             return false;
-//           })
-//           .map(function (cacheName) {
-//             return caches.delete(cacheName);
-//             // console.log(cacheName);
-//           })
-//       );
-//     })
-//   );
-// });
+self.addEventListener("notificationclick", (event) => {
+  const requestsPage = "/pending-approval";
+  const urlToOpen = new URL(requestsPage, self.location.origin).href;
+  const promiseChain = self.clients
+    .matchAll({
+      type: "window",
+      includeUncontrolled: true,
+    })
+    .then((windowClients) => {
+      let matchingClient = null;
+
+      for (let i = 0; i < windowClients.length; i++) {
+        const windowClient = windowClients[i];
+        if (windowClient.url === urlToOpen) {
+          matchingClient = windowClient;
+          break;
+        }
+      }
+
+      if (matchingClient) {
+        return matchingClient.focus();
+      } else {
+        return self.clients.openWindow(urlToOpen);
+      }
+    });
+
+  event.waitUntil(promiseChain);
+});
+
+self.addEventListener("install", function (event) {
+  // Activate right away
+  self.skipWaiting();
+  window.location.reload();
+});
 
 clientsClaim();
 

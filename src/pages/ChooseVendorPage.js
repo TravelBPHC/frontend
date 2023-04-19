@@ -20,6 +20,9 @@ import Map from "../components/Map";
 import { IconLeaf } from "@tabler/icons";
 import Bus from "../utils/Bus";
 import { Carousel } from "@mantine/carousel";
+import Error from "../components/Error";
+import useError from "../hooks/useError";
+import { askPermission, register } from "../serviceWorkerRegistration";
 
 const useStyles = createStyles((theme) => ({
   pageTitle: {
@@ -178,6 +181,20 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
+const updateServiceWorker = (workerRegistration) => {
+  const registrationWaiting = workerRegistration.waiting;
+
+  if (registrationWaiting) {
+    registrationWaiting.postMessage({ type: "SKIP_WAITING" });
+
+    registrationWaiting.addEventListener("statechange", (e) => {
+      if (e.target.state === "activated") {
+        window.location.reload();
+      }
+    });
+  }
+};
+
 function ChooseVendorPage() {
   const { upcomingTrips, setUpcomingTrips } = React.useContext(UserContext);
   const { classes } = useStyles();
@@ -188,38 +205,46 @@ function ChooseVendorPage() {
   const [seats, setSeats] = React.useState(null);
   const [phone, setPhone] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const [notifModal, setNotifModal] = React.useState(false);
+  const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
   let navigate = useNavigate();
   const { state } = useLocation();
 
   console.log(state);
 
-  const Trip = async () => {
-    setLoading(true);
-    await axios({
-      method: "post",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/trip/create`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-      data: {
-        source: state.source,
-        destination: state.destination,
-        departure_date: state.departure_date,
-        departure_time: state.departure_time,
-        waiting_time: state.waiting_time,
-        details: state.details,
-        passengers: state.passengers,
-        vendor: "Cabs",
-        car_name: vehicle,
-        seats: seats,
-        vendor_phone: phone,
-      },
-    });
-    getUpcomingTrips();
-    setOpened(true);
-    setLoading(false);
+  const createTrip = async () => {
+    try {
+      setLoading(true);
+      await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/trip/create`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+        data: {
+          source: state.source,
+          destination: state.destination,
+          departure_date: state.departure_date,
+          departure_time: state.departure_time,
+          waiting_time: state.waiting_time,
+          details: state.details,
+          passengers: state.passengers,
+          vendor: "Cabs",
+          car_name: vehicle,
+          seats: seats,
+          vendor_phone: phone,
+        },
+      });
+      getUpcomingTrips();
+      setOpened(true);
+      setLoading(false);
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
   };
 
-  const getUpcomingTrips = React.useCallback(
-    async (response) => {
+  const getUpcomingTrips = React.useCallback(async () => {
+    try {
       const data = await axios.get(
         `${process.env.REACT_APP_ROOT_URL}/api/trip/upcoming`,
         {
@@ -227,9 +252,29 @@ function ChooseVendorPage() {
         }
       );
       setUpcomingTrips(data.data);
-    },
-    [upcomingTrips]
-  );
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  }, [upcomingTrips]);
+
+  const subscribeNotifsModal = () => {
+    if (Notification.permission !== "granted") setNotifModal(true);
+    else navigate("/upcoming-trips");
+  };
+
+  const subscribeNotifs = async () => {
+    if (Notification.permission !== "granted") await askPermission();
+
+    register({
+      onUpdate: (registration) => {
+        updateServiceWorker(registration);
+      },
+    });
+    setNotifModal(false);
+    navigate("/upcoming-trips");
+  };
 
   const [opened, setOpened] = React.useState(false);
 
@@ -238,13 +283,6 @@ function ChooseVendorPage() {
       <Grid columns={12} gutter={"xl"}>
         <Grid.Col lg={8} className={classes.wrapper}>
           <Text className={classes.pageTitle}>Available Vendors</Text>
-          {/* <Button
-            sx={{ marginTop: 10, backgroundColor: "green" }}
-            onClick={() => setBusModal((busModal) => !busModal)}
-          >
-            <IconLeaf /> Bus Schedule
-          </Button>
-          <Bus opened={busModal} setOpened={setBusModal} /> */}
           <Text className={classes.pageSubtitle}>Cabs</Text>
           <div className={classes.vendorGroup}>
             <Accordion variant="contained">
@@ -352,7 +390,7 @@ function ChooseVendorPage() {
             <Button
               disabled={vehicle ? false : true}
               className={classes.confirmButton}
-              onClick={() => Trip()}
+              onClick={() => createTrip()}
               loading={loading}
             >
               {loading ? null : "Confirm Trip"}
@@ -387,6 +425,7 @@ function ChooseVendorPage() {
         opened={opened}
         onClose={() => setOpened(false)}
         title="Trip confirmed!"
+        centered
         style={{
           display: "flex",
           flexDirection: "column",
@@ -400,11 +439,53 @@ function ChooseVendorPage() {
         </Text>
         <Button
           sx={{ marginTop: 20, float: "right" }}
-          onClick={() => navigate("/upcoming-trips")}
+          onClick={() => subscribeNotifsModal()}
         >
           Got it!
         </Button>
       </Modal>
+      <Modal
+        opened={notifModal}
+        onClose={() => setNotifModal(false)}
+        title="Subscribe to Notifications!"
+        centered
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        withCloseButton={false}
+      >
+        <Text>
+          Allow Notifications for all real time updates about your trips and
+          requests!
+        </Text>
+        <Text size={"sm"} mt={"md"}>
+          You can subscribe or unsubscribe to notifications anytime from
+          Dashboard.
+        </Text>
+        <Button.Group mt={"md"}>
+          <Button variant="filled" onClick={() => subscribeNotifs()}>
+            Allow
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setNotifModal(false);
+              navigate("/upcoming-trips");
+            }}
+          >
+            Not now
+          </Button>
+        </Button.Group>
+      </Modal>
+      <Error
+        errorOpen={errorOpen}
+        setErrorOpen={setErrorOpen}
+        isUser={false}
+        error={errorMessage}
+      />
     </>
   );
 }

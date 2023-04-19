@@ -23,6 +23,8 @@ import {
 } from "@geoapify/react-geocoder-autocomplete";
 import "@geoapify/geocoder-autocomplete/styles/minimal.css";
 import emailRegex from "../utils/emailRegex";
+import useError from "../hooks/useError";
+import Error from "../components/Error";
 
 const useStyles = createStyles((theme) => ({
   Title: {
@@ -116,9 +118,10 @@ function CreatePostPage() {
   const [noOfMembers, setNoOfMembers] = React.useState(0);
   const [member, setMember] = React.useState(new Set());
   const [allUsers, setAllUsers] = React.useState();
-  const [error, setError] = React.useState(false);
   const [dataFetched, setDataFetched] = React.useState(false);
   const [searchData, setSearchData] = React.useState([]);
+  const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
+  const [isUser, setIsUser] = React.useState(true);
 
   let navigate = useNavigate();
 
@@ -126,20 +129,29 @@ function CreatePostPage() {
 
   React.useEffect(() => {
     const User = async () => {
-      const data = await axios.get(`${process.env.REACT_APP_ROOT_URL}/user/`, {
-        headers: { Authorization: localStorage.getItem("SavedToken") },
-      });
-      setOrganiser(data.data.email);
+      try {
+        const data = await axios.get(
+          `${process.env.REACT_APP_ROOT_URL}/user/`,
+          {
+            headers: { Authorization: localStorage.getItem("SavedToken") },
+          }
+        );
+        setOrganiser(data.data.email);
 
-      if (!state?.flag) {
-        member.add(data.data.email);
-        setMember(member);
+        if (!state?.flag) {
+          member.add(data.data.email);
+          setMember(member);
+        }
+      } catch (error) {
+        setIsUser(false);
+        if (typeof error === "object") setErrorMessage(error.message);
+        else setErrorMessage(error);
+        setErrorOpen(true);
       }
     };
     User();
 
     if (state?.flag && !dataFetched) {
-      console.log(state);
       setSource(state.data.source);
       setDestination(state.data.destination);
       var parts = state.data.departure_date.split("-");
@@ -157,7 +169,6 @@ function CreatePostPage() {
       let members = [];
       state.data.passengers.map((item, id) => members.push(item.email));
 
-      console.log("entering");
       setNoOfMembers(members.length - 1);
       setMember(new Set(members));
 
@@ -165,21 +176,30 @@ function CreatePostPage() {
     }
 
     const AllUser = async () => {
-      const data = await axios.get(
-        `${process.env.REACT_APP_ROOT_URL}/user/all`,
-        {
-          headers: { Authorization: localStorage.getItem("SavedToken") },
-        }
-      );
-      setAllUsers(data?.data?.map((item) => ({ ...item, value: item.email })));
+      try {
+        const data = await axios.get(
+          `${process.env.REACT_APP_ROOT_URL}/user/all`,
+          {
+            headers: { Authorization: localStorage.getItem("SavedToken") },
+          }
+        );
+        setAllUsers(
+          data?.data?.map((item) => ({ ...item, value: item.email }))
+        );
+      } catch (error) {
+        setIsUser(false);
+        if (typeof error === "object") setErrorMessage(error.message);
+        else setErrorMessage(error);
+        setErrorOpen(true);
+      }
     };
     AllUser();
   }, [noOfMembers]);
 
   const Create = async () => {
-    console.log(date);
     if (date && leavingTime && waitingTime && source != destination) {
-      setError(false);
+      setErrorOpen(false);
+      setIsUser(true);
       navigate("/choose-vendor", {
         state: {
           source: source,
@@ -193,31 +213,37 @@ function CreatePostPage() {
         },
       });
     } else {
-      setError(true);
+      setErrorMessage(
+        "Please fill all required fields / Destination and source is same"
+      );
+      setErrorOpen(true);
     }
   };
 
   const Update = async () => {
-    console.log([...member].join(","));
-
-    await axios({
-      method: "patch",
-      url: `${process.env.REACT_APP_ROOT_URL}/api/trip/update/${state?.data.id}`,
-      headers: { Authorization: localStorage.getItem("SavedToken") },
-      data: {
-        source: source,
-        destination: destination,
-        departure_date: dayjs(date).format("YYYY-MM-DD"),
-        departure_time: dayjs(leavingTime).format("HH:mm:ss"),
-        waiting_time: waitingTime,
-        details: details,
-        passengers: [...member].join(","),
-      },
-    });
-    navigate("/upcoming-trips");
+    try {
+      await axios({
+        method: "patch",
+        url: `${process.env.REACT_APP_ROOT_URL}/api/trip/update/${state?.data.id}`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+        data: {
+          source: source,
+          destination: destination,
+          departure_date: dayjs(date).format("YYYY-MM-DD"),
+          departure_time: dayjs(leavingTime).format("HH:mm:ss"),
+          waiting_time: waitingTime,
+          details: details,
+          passengers: [...member].join(","),
+        },
+      });
+      navigate("/upcoming-trips");
+    } catch (error) {
+      setIsUser(false);
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
   };
-
-  console.log(member);
 
   return (
     <GeoapifyContext apiKey={process.env.REACT_APP_MAPS_API_KEY}>
@@ -247,7 +273,6 @@ function CreatePostPage() {
                 borderLeftColor: "white",
                 borderWidth: 1,
               }}
-              // onClick={() => console.log("hello")}
             >
               <IconMapPin size={20} />
             </ActionIcon>
@@ -350,15 +375,10 @@ function CreatePostPage() {
               min={state?.flag ? state?.data.passengers.length : 1}
               placeholder="Members"
               onChange={(value) => {
-                // console.log("value", value, noOfMembers, member.size - 1);
-                // console.log("members", member);
                 if (value - 1 <= noOfMembers && value == member.size - 1) {
                   member.delete([...member][member.size - 1]);
                 }
                 setNoOfMembers(value - 1);
-                // console.log("done");
-                // console.log("value", value, noOfMembers, member.size - 1);
-                // console.log("members", member);
               }}
               className={classes.form}
               label="Choose members"
@@ -392,31 +412,17 @@ function CreatePostPage() {
             ))}
           </>
         )}
-        <Dialog
-          opened={error}
-          withCloseButton
-          onClose={() => setError(false)}
-          size="lg"
-          radius="md"
-          position={{ left: 20, bottom: 20 }}
-        >
-          <Text
-            size="md"
-            color={"red"}
-            style={{ marginBottom: 10 }}
-            weight={500}
-          >
-            Error
-          </Text>
-          <Text size="sm" color={"red"} style={{ marginBottom: 10 }}>
-            Please fill all required fields / Destination and source is same
-          </Text>
-        </Dialog>
+        <Error
+          errorOpen={errorOpen}
+          setErrorOpen={setErrorOpen}
+          isUser={isUser}
+          error={errorMessage}
+        />
         <Button
           color={"customDark.0"}
           variant="outline"
           className={classes.button}
-          disabled={error}
+          disabled={errorOpen}
           onClick={() => (state?.flag ? Update() : Create())}
         >
           {state?.flag ? "Update" : "Next"}
