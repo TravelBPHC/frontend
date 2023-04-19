@@ -58,7 +58,7 @@ export function register(config) {
   }
 }
 
-function askPermission() {
+export function askPermission() {
   return new Promise(function (resolve, reject) {
     const permissionResult = Notification.requestPermission(function (result) {
       resolve(result);
@@ -94,25 +94,7 @@ function registerValidSW(swUrl, config) {
 
             // Execute callback
             if (config && config.onUpdate) {
-              const waitingServiceWorker = registration.waiting;
-
-              if (waitingServiceWorker) {
-                waitingServiceWorker.addEventListener(
-                  "statechange",
-                  (event) => {
-                    if (event.target.state === "activated") {
-                      if (
-                        window.confirm(
-                          "There is a new version of the app ready. Please reload to update."
-                        )
-                      ) {
-                        window.location.reload();
-                      }
-                    }
-                  }
-                );
-                waitingServiceWorker.postMessage({ type: "SKIP_WAITING" });
-              }
+              config.onUpdate(registration);
             }
           } else {
             // At this point, everything has been precached.
@@ -129,37 +111,41 @@ function registerValidSW(swUrl, config) {
       };
     };
 
-    askPermission();
+    // askPermission();
+    if (Notification.permission === "granted") {
+      const subscribeOptions = {
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(
+          `${process.env.REACT_APP_VAPID_KEY}`
+        ),
+      };
+      console.log("Subscribing to push notifs ...");
+      // Use serviceWorker.ready so this is only invoked
+      // when the service worker is available.
+      navigator.serviceWorker.ready
+        .then(function (serviceWorkerRegistration) {
+          return serviceWorkerRegistration.pushManager.subscribe(
+            subscribeOptions
+          );
+        })
+        .then(function (pushSubscription) {
+          console.log(
+            "Received PushSubscription: ",
+            JSON.stringify(pushSubscription)
+          );
 
-    const subscribeOptions = {
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(
-        `${process.env.REACT_APP_VAPID_KEY}`
-      ),
-    };
-    console.log("Subscribing to push notifs ...");
-    // Use serviceWorker.ready so this is only invoked
-    // when the service worker is available.
-    navigator.serviceWorker.ready
-      .then(function (serviceWorkerRegistration) {
-        return serviceWorkerRegistration.pushManager.subscribe(
-          subscribeOptions
-        );
-      })
-      .then(function (pushSubscription) {
-        console.log(
-          "Received PushSubscription: ",
-          JSON.stringify(pushSubscription)
-        );
-
-        localStorage.setItem("subscription", JSON.stringify(pushSubscription));
-        console.log("Subscribed to push notifs");
-        // uncomment to start Push Notifs
-        sendSubscriptionToBackEnd(JSON.stringify(pushSubscription));
-      })
-      .catch((error) => {
-        console.error("Error during service worker registration:", error);
-      });
+          localStorage.setItem(
+            "subscription",
+            JSON.stringify(pushSubscription)
+          );
+          console.log("Subscribed to push notifs");
+          // uncomment to start Push Notifs
+          sendSubscriptionToBackEnd(JSON.stringify(pushSubscription));
+        })
+        .catch((error) => {
+          console.error("Error during service worker registration:", error);
+        });
+    }
   });
 }
 

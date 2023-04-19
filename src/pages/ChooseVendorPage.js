@@ -22,6 +22,7 @@ import Bus from "../utils/Bus";
 import { Carousel } from "@mantine/carousel";
 import Error from "../components/Error";
 import useError from "../hooks/useError";
+import { askPermission, register } from "../serviceWorkerRegistration";
 
 const useStyles = createStyles((theme) => ({
   pageTitle: {
@@ -180,6 +181,20 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
+const updateServiceWorker = (workerRegistration) => {
+  const registrationWaiting = workerRegistration.waiting;
+
+  if (registrationWaiting) {
+    registrationWaiting.postMessage({ type: "SKIP_WAITING" });
+
+    registrationWaiting.addEventListener("statechange", (e) => {
+      if (e.target.state === "activated") {
+        window.location.reload();
+      }
+    });
+  }
+};
+
 function ChooseVendorPage() {
   const { upcomingTrips, setUpcomingTrips } = React.useContext(UserContext);
   const { classes } = useStyles();
@@ -190,6 +205,7 @@ function ChooseVendorPage() {
   const [seats, setSeats] = React.useState(null);
   const [phone, setPhone] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const [notifModal, setNotifModal] = React.useState(false);
   const [errorOpen, setErrorOpen, errorMessage, setErrorMessage] = useError();
   let navigate = useNavigate();
   const { state } = useLocation();
@@ -242,6 +258,23 @@ function ChooseVendorPage() {
       setErrorOpen(true);
     }
   }, [upcomingTrips]);
+
+  const subscribeNotifsModal = () => {
+    if (Notification.permission !== "granted") setNotifModal(true);
+    else navigate("/upcoming-trips");
+  };
+
+  const subscribeNotifs = async () => {
+    if (Notification.permission !== "granted") await askPermission();
+
+    register({
+      onUpdate: (registration) => {
+        updateServiceWorker(registration);
+      },
+    });
+    setNotifModal(false);
+    navigate("/upcoming-trips");
+  };
 
   const [opened, setOpened] = React.useState(false);
 
@@ -392,6 +425,7 @@ function ChooseVendorPage() {
         opened={opened}
         onClose={() => setOpened(false)}
         title="Trip confirmed!"
+        centered
         style={{
           display: "flex",
           flexDirection: "column",
@@ -405,10 +439,46 @@ function ChooseVendorPage() {
         </Text>
         <Button
           sx={{ marginTop: 20, float: "right" }}
-          onClick={() => navigate("/upcoming-trips")}
+          onClick={() => subscribeNotifsModal()}
         >
           Got it!
         </Button>
+      </Modal>
+      <Modal
+        opened={notifModal}
+        onClose={() => setNotifModal(false)}
+        title="Subscribe to Notifications!"
+        centered
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        withCloseButton={false}
+      >
+        <Text>
+          Allow Notifications for all real time updates about your trips and
+          requests!
+        </Text>
+        <Text size={"sm"} mt={"md"}>
+          You can subscribe or unsubscribe to notifications anytime from
+          Dashboard.
+        </Text>
+        <Button.Group mt={"md"}>
+          <Button variant="filled" onClick={() => subscribeNotifs()}>
+            Allow
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setNotifModal(false);
+              navigate("/upcoming-trips");
+            }}
+          >
+            Not now
+          </Button>
+        </Button.Group>
       </Modal>
       <Error
         errorOpen={errorOpen}

@@ -10,6 +10,8 @@ import {
   Loader,
   Center,
   Collapse,
+  Flex,
+  Switch,
 } from "@mantine/core";
 import React from "react";
 import {
@@ -24,6 +26,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { UserContext } from "../utils/Context";
 import useError from "../hooks/useError";
 import Error from "../components/Error";
+import { register, askPermission } from "../serviceWorkerRegistration";
 
 const useStyles = createStyles((theme) => ({
   Title: {
@@ -131,15 +134,18 @@ const useStyles = createStyles((theme) => ({
     height: 216,
     width: 216,
     borderRadius: 999,
+    marginLeft: "auto",
+    marginRight: "auto",
   },
 
   button: {
-    width: "50%",
-    marginLeft: "50%",
-    transform: "translateX(-50%)",
-    height: 70,
+    // width: "20%",
+    marginLeft: 20,
+    // transform: "translateX(-50%)",
+    // marginTop: 20,
+    height: 40,
     borderRadius: 20,
-    marginTop: 30,
+    marginTop: 40,
     opacity: 0.8,
     transitionDuration: "0.3s",
 
@@ -159,6 +165,20 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
+const updateServiceWorker = (workerRegistration) => {
+  const registrationWaiting = workerRegistration.waiting;
+
+  if (registrationWaiting) {
+    registrationWaiting.postMessage({ type: "SKIP_WAITING" });
+
+    registrationWaiting.addEventListener("statechange", (e) => {
+      if (e.target.state === "activated") {
+        window.location.reload();
+      }
+    });
+  }
+};
+
 function Dashboard() {
   const { userDetail, upcomingTrips } = React.useContext(UserContext);
   const { classes } = useStyles();
@@ -168,6 +188,30 @@ function Dashboard() {
   const [pageLoading, setPageLoading] = React.useState(true);
   const [accountToggle, setAccountToggle] = React.useState(false);
   const [errorMessage, setErrorMessage, errorOpen, setErrorOpen] = useError();
+
+  const subscribeNotifs = async () => {
+    if (Notification.permission !== "granted") await askPermission();
+
+    register({
+      onUpdate: (registration) => {
+        updateServiceWorker(registration);
+      },
+    });
+  };
+
+  const unsubscribeNotifs = async () => {
+    try {
+      await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_ROOT_URL}/user/unsubscribe`,
+        headers: { Authorization: localStorage.getItem("SavedToken") },
+      });
+    } catch (error) {
+      if (typeof error === "object") setErrorMessage(error.message);
+      else setErrorMessage(error);
+      setErrorOpen(true);
+    }
+  };
 
   const Phone = async () => {
     try {
@@ -198,6 +242,11 @@ function Dashboard() {
 
   const pageLoaded = React.useCallback(
     (response) => {
+      register({
+        onUpdate: (registration) => {
+          updateServiceWorker(registration);
+        },
+      });
       setPageLoading(false);
     },
     [pageLoading, upcomingTrips, userDetail]
@@ -220,7 +269,7 @@ function Dashboard() {
                 variant="gradient"
                 gradient={{ from: "blue.5", to: "pink.7", deg: 0 }}
               >
-                Hi, {userDetail?.name}!
+                Hi, he {userDetail?.name}!
               </Text>
             </div>
             <Text
@@ -257,27 +306,38 @@ function Dashboard() {
                 readOnly
                 rightSection={<IconLock size={20} />}
               />
+              <Flex direction={"row"} justify={"center"} align={"center"}>
+                <TextInput
+                  label="Phone Number"
+                  className={classes.form}
+                  value={phone || userDetail?.phone}
+                  onChange={(event) => setPhone(event.currentTarget.value)}
+                  required
+                  error={error ? "Invalid Phone" : null}
+                  rightSection={<IconEdit size={20} />}
+                />
 
-              <TextInput
-                label="Phone Number"
-                className={classes.form}
-                value={phone || userDetail?.phone}
-                onChange={(event) => setPhone(event.currentTarget.value)}
-                required
-                error={error ? "Invalid Phone" : null}
-                rightSection={<IconEdit size={20} />}
+                <Button
+                  color={"customDark.0"}
+                  variant="outline"
+                  className={classes.button}
+                  onClick={() => Phone()}
+                  disabled={userDetail?.phone != phone ? false : true}
+                  type="submit"
+                >
+                  Update
+                </Button>
+              </Flex>
+              <Switch
+                label="Notifications"
+                defaultChecked={userDetail.get_notifs}
+                onChange={(event) =>
+                  event.currentTarget.checked === true
+                    ? subscribeNotifs()
+                    : unsubscribeNotifs()
+                }
               />
 
-              <Button
-                color={"customDark.0"}
-                variant="outline"
-                className={classes.button}
-                onClick={() => Phone()}
-                disabled={userDetail?.phone != phone ? false : true}
-                type="submit"
-              >
-                Update
-              </Button>
               <Dialog
                 withCloseButton={false}
                 opened={opened}

@@ -14,7 +14,6 @@ import BG from "../assets/bg.jpg";
 import { useGoogleLogin } from "@react-oauth/google";
 import { IconBrandGoogle } from "@tabler/icons";
 import { sendSubscriptionToBackEnd } from "../utils/subscription";
-import { register } from "../serviceWorkerRegistration";
 import useError from "../hooks/useError";
 import Error from "../components/Error";
 import axios from "axios";
@@ -123,8 +122,6 @@ function LandingPage({ loggedIn, setLoggedIn }) {
           "expires_at",
           Date.now() + (data.expires_in - 30) * 1000
         );
-
-        register();
 
         setLoggedIn(true);
       } catch (error) {

@@ -439,12 +439,9 @@ export default function CustomDiv({
                   onClick={() => SendRequest(item)}
                   loading={loading1}
                   disabled={
-                    disabled1
+                    match?.status === "Accepted" ||
+                    match?.status === "Unconfirmed"
                       ? true
-                      : match
-                      ? match?.status === "Rejected"
-                        ? false
-                        : true
                       : false
                   }
                 >
@@ -499,6 +496,7 @@ export default function CustomDiv({
                     transitionDuration: "3s",
                     display: disabled
                       ? setTimeout(() => {
+                          setDisabled(false);
                           return "none";
                         }, 2000)
                       : "flex",
@@ -543,7 +541,7 @@ export default function CustomDiv({
                         },
                       })}
                       loading={loaderAccept}
-                      disabled={disabled}
+                      // disabled={disabled}
                       onClick={() => Accept(item)}
                     >
                       Accept
@@ -557,7 +555,7 @@ export default function CustomDiv({
                       classNames={{ root: classes.roundedButton }}
                       onClick={() => Decline(item)}
                       loading={loaderReject}
-                      disabled={disabled}
+                      // disabled={disabled}
                     >
                       <IconX size={22} />
                     </ActionIcon>
@@ -785,7 +783,6 @@ export default function CustomDiv({
                 classNames={{ root: classes.button, label: classes.label }}
                 style={{ color: "#00FF47" }}
                 loading={loaderAccept}
-                disabled={disabled}
                 onClick={() => Accept(item)}
               >
                 Accept
@@ -796,7 +793,6 @@ export default function CustomDiv({
                 style={{ borderLeftStyle: "solid", color: "red" }}
                 onClick={() => Decline(item)}
                 loading={loaderReject}
-                disabled={disabled}
               >
                 Decline
               </Button>
